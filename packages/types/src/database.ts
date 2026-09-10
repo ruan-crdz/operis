@@ -1234,6 +1234,42 @@ Update: {
 };
 Relationships: [{foreignKeyName:"ledger_periods_closed_by_fkey";columns:["closed_by"];isOneToOne:false;referencedRelation:"profiles";referencedColumns:["id"]},{foreignKeyName:"ledger_periods_created_by_fkey";columns:["created_by"];isOneToOne:false;referencedRelation:"profiles";referencedColumns:["id"]},{foreignKeyName:"ledger_periods_organization_id_client_id_book_id_fkey";columns:["organization_id","client_id","book_id"];isOneToOne:false;referencedRelation:"ledger_books";referencedColumns:["organization_id","client_id","id"]},{foreignKeyName:"ledger_periods_organization_id_fkey";columns:["organization_id"];isOneToOne:false;referencedRelation:"organizations";referencedColumns:["id"]},{foreignKeyName:"ledger_periods_reopened_by_fkey";columns:["reopened_by"];isOneToOne:false;referencedRelation:"profiles";referencedColumns:["id"]}];
 };
+"ledger_statement_mappings": {
+Row: {
+"id": string;
+"organization_id": string;
+"client_id": string;
+"book_id": string;
+"account_id": string;
+"line_key": string;
+"created_by": string;
+"created_at": string;
+"updated_at": string;
+};
+Insert: {
+"id"?: string;
+"organization_id": string;
+"client_id": string;
+"book_id": string;
+"account_id": string;
+"line_key": string;
+"created_by"?: string;
+"created_at"?: string;
+"updated_at"?: string;
+};
+Update: {
+"id"?: string;
+"organization_id"?: string;
+"client_id"?: string;
+"book_id"?: string;
+"account_id"?: string;
+"line_key"?: string;
+"created_by"?: string;
+"created_at"?: string;
+"updated_at"?: string;
+};
+Relationships: [{foreignKeyName:"ledger_statement_mappings_created_by_fkey";columns:["created_by"];isOneToOne:false;referencedRelation:"profiles";referencedColumns:["id"]},{foreignKeyName:"ledger_statement_mappings_organization_id_client_id_book__fkey1";columns:["organization_id","client_id","book_id","account_id"];isOneToOne:false;referencedRelation:"ledger_accounts";referencedColumns:["organization_id","client_id","book_id","id"]},{foreignKeyName:"ledger_statement_mappings_organization_id_client_id_book_i_fkey";columns:["organization_id","client_id","book_id"];isOneToOne:false;referencedRelation:"ledger_books";referencedColumns:["organization_id","client_id","id"]},{foreignKeyName:"ledger_statement_mappings_organization_id_fkey";columns:["organization_id"];isOneToOne:false;referencedRelation:"organizations";referencedColumns:["id"]}];
+};
 "member_roles": {
 Row: {
 "organization_id": string;
@@ -2008,10 +2044,14 @@ Relationships: [{foreignKeyName:"workflows_created_by_fkey";columns:["created_by
 "ignore_bank_transaction": { Args: {"transaction_id":string}; Returns: undefined };
 "import_bank_statement": { Args: {"bank_account":string;"filename":string;"file_checksum":string;"transactions":Json}; Returns: string };
 "is_org_member": { Args: {"org_id":string}; Returns: boolean };
+"ledger_balance_sheet": { Args: {"book":string;"as_of":string}; Returns: Json };
+"ledger_closing_checklist": { Args: {"period":string}; Returns: Json };
 "ledger_general_ledger": { Args: {"book":string;"target_account":string;"date_from":string;"date_to":string}; Returns: Json };
+"ledger_income_statement": { Args: {"book":string;"date_from":string;"date_to":string}; Returns: Json };
 "ledger_journal": { Args: {"book":string;"date_from":string;"date_to":string}; Returns: Json };
 "ledger_trial_balance": { Args: {"book":string;"date_from":string;"date_to":string}; Returns: Json };
 "manage_member": { Args: {"org_id":string;"email_address":string;"selected_role":string;"selected_department"?:string}; Returns: undefined };
+"map_ledger_statement_account": { Args: {"book":string;"target_account":string;"line":string}; Returns: string };
 "open_ledger_period": { Args: {"book":string;"target_competence":string}; Returns: string };
 "post_ledger_entry": { Args: {"entry":string;"expected_version":number}; Returns: number };
 "process_import": { Args: {"import_id":string}; Returns: number };

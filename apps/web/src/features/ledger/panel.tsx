@@ -16,6 +16,7 @@ import {
 } from '@/client/actions/ledger';
 import { LedgerEntryForm } from './entry-form';
 import { LedgerBankSection } from './bank';
+import { LedgerStatements } from './statements';
 import type { EdgeContext } from '@/server/edge/context';
 type Db = EdgeContext['db'];
 const statusLabel: Record<string, string> = { draft: 'Rascunho', posted: 'Postado', reversed: 'Estornado' };
@@ -144,6 +145,13 @@ export async function LedgerPanel({
     : { data: [], error: null };
   check(ledgerRows.error);
   const ledgerAccountRows = ledgerRows.data as unknown as LedgerRow[] | null;
+  const checklist = period
+    ? ((await db.rpc('ledger_closing_checklist', { period: period.id })).data as unknown as {
+        check_key: string;
+        ok: boolean;
+        detail: string;
+      }[])
+    : [];
   return (
     <div className="stack">
       <Panel className="panel-pad">
@@ -190,11 +198,27 @@ export async function LedgerPanel({
                 {period.status === 'closed' ? 'Fechada' : 'Aberta'}
               </Badge>
             </div>
+            {period.status === 'open' && checklist.length > 0 && (
+              <ul style={{ marginBottom: 16 }}>
+                {checklist.map((c) => (
+                  <li key={c.check_key} style={{ color: c.ok ? 'var(--primary)' : 'var(--warning)' }}>
+                    {c.ok ? '✓' : '•'} {c.detail}
+                  </li>
+                ))}
+              </ul>
+            )}
             {period.status === 'open' && permissions.has('ledger.close') && (
               <ActionButton
                 action={closeLedgerPeriod}
                 fields={{ period_id: period.id, revision: String(period.revision) }}
-                confirm="Fechar a competência? Não será mais possível postar lançamentos nela."
+                confirm={
+                  checklist.every((c) => c.ok)
+                    ? 'Fechar a competência? Não será mais possível postar lançamentos nela.'
+                    : `Fechar mesmo assim? Pendências: ${checklist
+                        .filter((c) => !c.ok)
+                        .map((c) => c.detail)
+                        .join('; ')}.`
+                }
               >
                 Fechar competência
               </ActionButton>
@@ -485,6 +509,7 @@ export async function LedgerPanel({
               <EmptyState title="Nenhuma conta analítica" description="Cadastre contas no plano acima." />
             )}
           </Panel>
+          {await LedgerStatements({ db, bookId, from, to, accounts: postableAccounts, permissions })}
         </>
       )}
       {await LedgerBankSection({

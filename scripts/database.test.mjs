@@ -684,3 +684,59 @@ test('ledger: bank statement import dedupes by fitid and reconciliation creates 
     /já foi conciliado/,
   );
 });
+test('ledger statements: DRE flags unmapped result accounts until mapped, and the balance sheet equation always holds', async () => {
+  const revenueAccount = await scalar(
+    "select public.create_ledger_account($1,'3.1.01','Receita de serviços','revenue','credit',true,null)",
+    [ledgerBook],
+  );
+  const revenueEntry = await scalar(
+    "select public.create_ledger_entry($1,$2,'2026-09-12','Recebimento de serviço','',$3,$4)",
+    [
+      ledgerBook,
+      ledgerPeriod,
+      randomUUID(),
+      JSON.stringify([
+        { account_id: cashAccount, side: 'debit', amount: '2000.00' },
+        { account_id: revenueAccount, side: 'credit', amount: '2000.00' },
+      ]),
+    ],
+  );
+  await db.query('select public.post_ledger_entry($1,1)', [revenueEntry]);
+  let checklist = await db.query('select check_key,ok from public.ledger_closing_checklist($1)', [ledgerPeriod]);
+  assert.equal(checklist.rows.find((r) => r.check_key === 'unmapped_accounts').ok, false);
+  let income = await db.query(
+    "select line_key,amount from public.ledger_income_statement($1,'2026-09-01','2026-09-30')",
+    [ledgerBook],
+  );
+  assert.ok(income.rows.some((r) => r.line_key === 'unmapped_revenue'));
+  await db.query("select public.map_ledger_statement_account($1,$2,'gross_revenue')", [ledgerBook, revenueAccount]);
+  income = await db.query(
+    "select line_key,amount from public.ledger_income_statement($1,'2026-09-01','2026-09-30')",
+    [ledgerBook],
+  );
+  assert.equal(Number(income.rows.find((r) => r.line_key === 'gross_revenue')?.amount), 2000);
+  assert.ok(!income.rows.some((r) => r.line_key === 'unmapped_revenue'));
+  checklist = await db.query('select check_key,ok from public.ledger_closing_checklist($1)', [ledgerPeriod]);
+  assert.equal(checklist.rows.find((r) => r.check_key === 'unmapped_accounts').ok, false);
+  await db.query("select public.map_ledger_statement_account($1,$2,'expense')", [ledgerBook, expenseAccount]);
+  checklist = await db.query('select check_key,ok from public.ledger_closing_checklist($1)', [ledgerPeriod]);
+  assert.equal(checklist.rows.find((r) => r.check_key === 'unmapped_accounts').ok, true);
+  const trueResult = await scalar(
+    `select coalesce(sum(case when a.account_type='revenue' then (case l.side when 'credit' then l.amount else -l.amount end)
+                              else -(case l.side when 'debit' then l.amount else -l.amount end) end),0)
+     from public.ledger_journal_lines l join public.ledger_accounts a on a.id=l.account_id
+     join public.ledger_journal_entries e on e.id=l.entry_id
+     where a.book_id=$1 and a.account_type in ('revenue','expense') and e.status in ('posted','reversed') and e.entry_date between '2026-09-01' and '2026-09-30'`,
+    [ledgerBook],
+  );
+  const balance = await db.query(
+    "select account_type,sum(balance) as total from public.ledger_balance_sheet($1,'2026-09-30') group by account_type",
+    [ledgerBook],
+  );
+  const totals = Object.fromEntries(balance.rows.map((r) => [r.account_type, Number(r.total)]));
+  const asset = totals.asset ?? 0,
+    liability = totals.liability ?? 0,
+    equity = totals.equity ?? 0;
+  assert.equal(asset, 2000, 'saldo bancário em rascunho não deve compor o balanço');
+  assert.ok(Math.abs(asset - (liability + equity + Number(trueResult))) < 0.01);
+});

@@ -178,3 +178,18 @@ export async function ignoreBankTransaction(form: FormData) {
     return { ok: true, message: 'Lançamento do extrato ignorado.' };
   });
 }
+export async function mapLedgerStatementAccount(form: FormData) {
+  return action(async () => {
+    const { db } = await getContext();
+    const line = z
+      .enum(['gross_revenue', 'deductions', 'cost', 'expense'])
+      .parse(text(form, 'line_key'));
+    const { error } = await db.rpc('map_ledger_statement_account', {
+      book: id(form, 'book_id'),
+      target_account: id(form, 'account_id'),
+      line,
+    });
+    check(error);
+    return { ok: true, message: 'Mapeamento salvo na DRE.' };
+  });
+}
