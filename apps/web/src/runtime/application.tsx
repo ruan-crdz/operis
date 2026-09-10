@@ -1,7 +1,8 @@
 'use client';
 import { useEffect, useState, type ReactNode } from 'react';
-import { Alert, Button, PageSkeleton, ToastProvider } from '@operis/ui';
-import { routes } from './routes';
+import { Alert, Button, ToastProvider } from '@operis/ui';
+import { routes, matchRoute } from './routes';
+import { routeSkeletons, FormSkeleton } from './skeletons';
 import { Navigation, router, routeLocation, useLocation } from './navigation';
 import { applyPreferences } from './preferences';
 import { createClient, isConfigured } from '@/client/db/client';
@@ -63,22 +64,13 @@ export default function Application() {
       await finishAuth();
       if (location !== routeLocation()) return;
       const url = new URL(location, 'https://operis.invalid');
-      let route = Object.keys(routes).find((r) => r === url.pathname);
-      let id = '';
-      if (!route)
-        for (const candidate of Object.keys(routes).filter((r) => r.includes('[id]'))) {
-          const prefix = candidate.split('[id]')[0]!;
-          if (url.pathname.startsWith(prefix) && /^[0-9a-f-]{36}$/.test(url.pathname.slice(prefix.length))) {
-            route = candidate;
-            id = url.pathname.slice(prefix.length);
-            break;
-          }
-        }
-      if (!route) {
+      const match = matchRoute(url.pathname);
+      if (!match) {
         if (current) setScreen({ key, node: <NotFound /> });
         return;
       }
-      const screenModule = await routes[route as keyof typeof routes]();
+      const { route, id } = match;
+      const screenModule = await routes[route]();
       const loader: Loader = screenModule.default;
       let node = await loader({
         params: Promise.resolve({ id }),
@@ -115,7 +107,11 @@ export default function Application() {
       {screen?.key === key ? (
         <div key={key}>{screen.node}</div>
       ) : (
-        <PageSkeleton />
+        (() => {
+          const match = matchRoute(new URL(location, 'https://operis.invalid').pathname);
+          const Placeholder = match ? routeSkeletons[match.route] : FormSkeleton;
+          return <Placeholder />;
+        })()
       )}
     </ToastProvider>
   );
