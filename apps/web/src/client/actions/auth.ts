@@ -8,25 +8,21 @@ const credentials = z.object({
   email: z.email('Informe um email válido.'),
   password: z.string().min(10, 'Use pelo menos 10 caracteres.'),
 });
+async function loadPreferences(db: Awaited<ReturnType<typeof createClient>>, userId: string) {
+  const preferences = await db.from('user_preferences').select('theme,density').eq('id', userId).single();
+  check(preferences.error);
+  const jar = await localPreferences();
+  for (const [key, value] of Object.entries(preferences.data ?? { theme: 'light', density: 'comfortable' })) {
+    jar.set(`operis_${key}`, value);
+  }
+}
 export async function login(form: FormData) {
   return action(async () => {
     const values = credentials.parse(Object.fromEntries(form));
     const db = await createClient();
     const { data, error } = await db.auth.signInWithPassword(values);
     if (error) throw new Error('Email ou senha incorretos, ou conta ainda não confirmada.');
-    const preferences = await db
-      .from('user_preferences')
-      .select('theme,density')
-      .eq('id', data.user.id)
-      .single();
-    check(preferences.error);
-    const jar = await localPreferences();
-    for (const [key, value] of Object.entries(
-      preferences.data ?? { theme: 'light', density: 'comfortable' },
-    )) {
-      jar.set(`operis_${key}`, value);
-    }
-
+    await loadPreferences(db, data.user.id);
     redirect('/app');
   });
 }
@@ -34,13 +30,17 @@ export async function signup(form: FormData) {
   return action(async () => {
     const values = credentials.parse(Object.fromEntries(form));
     const db = await createClient();
-    const { error } = await db.auth.signUp({
+    const { data, error } = await db.auth.signUp({
       ...values,
       options: {
         emailRedirectTo: authCallbackUrl(),
       },
     });
     if (error) throw new Error('Não foi possível criar sua conta. Confira os dados e tente novamente.');
+    if (data.session) {
+      await loadPreferences(db, data.user!.id);
+      redirect('/app');
+    }
     return { ok: true, message: 'Confira seu email para confirmar a conta e entrar no Operis.' };
   });
 }

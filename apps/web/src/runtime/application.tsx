@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState, type ReactNode } from 'react';
-import { Alert, Button } from '@operis/ui';
+import { Alert, Button, ToastProvider } from '@operis/ui';
 import { routes } from './routes';
 import { Navigation, router, routeLocation, useLocation } from './navigation';
 import { applyPreferences } from './preferences';
@@ -110,11 +110,15 @@ export default function Application() {
       current = false;
     };
   }, [location, key]);
-  return screen?.key === key ? (
-    <div key={key}>{screen.node}</div>
-  ) : (
-    <main id="main" className="panel-pad" role="status" aria-live="polite">
-      Carregando Operis…
-    </main>
+  return (
+    <ToastProvider>
+      {screen?.key === key ? (
+        <div key={key}>{screen.node}</div>
+      ) : (
+        <main id="main" className="panel-pad" role="status" aria-live="polite">
+          Carregando Operis…
+        </main>
+      )}
+    </ToastProvider>
   );
 }

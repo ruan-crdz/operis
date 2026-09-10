@@ -1,10 +1,52 @@
-import type { ButtonHTMLAttributes, HTMLAttributes, InputHTMLAttributes, ReactNode } from 'react';
+'use client';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useState,
+  type ButtonHTMLAttributes,
+  type HTMLAttributes,
+  type InputHTMLAttributes,
+  type ReactNode,
+} from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { Inbox, LoaderCircle } from 'lucide-react';
 export function cn(...values: ClassValue[]) {
   return twMerge(clsx(values));
+}
+type ToastTone = 'success' | 'danger' | 'warning';
+type ToastItem = { id: number; message: string; tone: ToastTone };
+const ToastContext = createContext<{ show: (message: string, tone?: ToastTone) => void } | null>(null);
+export function ToastProvider({ children }: { children: ReactNode }) {
+  const [items, setItems] = useState<ToastItem[]>([]);
+  const show = useCallback((message: string, tone: ToastTone = 'success') => {
+    const id = Date.now() + Math.random();
+    setItems((current) => [...current, { id, message, tone }]);
+    setTimeout(() => setItems((current) => current.filter((item) => item.id !== id)), 5000);
+  }, []);
+  return (
+    <ToastContext.Provider value={{ show }}>
+      {children}
+      <div className="toast-region" aria-live="polite">
+        {items.map((item) => (
+          <div
+            key={item.id}
+            className={`toast toast-${item.tone}`}
+            role={item.tone === 'danger' ? 'alert' : 'status'}
+          >
+            {item.message}
+          </div>
+        ))}
+      </div>
+    </ToastContext.Provider>
+  );
+}
+export function useToast() {
+  const context = useContext(ToastContext);
+  if (!context) throw new Error('useToast precisa estar dentro de ToastProvider.');
+  return context;
 }
 export const buttonVariants = cva('button', {
   variants: {

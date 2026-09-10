@@ -30,7 +30,7 @@ enable_signup = true
 minimum_password_length = 10
 [auth.email]
 enable_signup = true
-enable_confirmations = true
+enable_confirmations = false
 double_confirm_changes = true
 [analytics]
 enabled = false

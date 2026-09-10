@@ -4,7 +4,7 @@ import { useRouter } from '@/runtime/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Alert, Button, Input } from '@operis/ui';
+import { Alert, Button, Input, useToast } from '@operis/ui';
 import type { ActionResult, SelectOption } from '@operis/types';
 import { invokeAction } from './invoke-action';
 export type Field = {
@@ -42,6 +42,7 @@ export function ActionForm({
   const [result, setResult] = useState<ActionResult<unknown> | null>(null);
   const [pending, setPending] = useState(false);
   const router = useRouter();
+  const toast = useToast();
   const {
     register,
     setError,
@@ -78,6 +79,7 @@ export function ActionForm({
         try {
           const response = await invokeAction(action, payload);
           setResult(response);
+          toast.show(response.message, response.ok ? 'success' : 'danger');
           if (!response.ok)
             Object.entries(response.fields ?? {}).forEach(([name, message]) => setError(name, { message }));
           if (response.ok) {
@@ -85,10 +87,9 @@ export function ActionForm({
             if (redirectTo) router.push(redirectTo);
           }
         } catch {
-          setResult({
-            ok: false,
-            message: 'A conexão foi interrompida. Seus campos foram preservados; tente novamente.',
-          });
+          const message = 'A conexão foi interrompida. Seus campos foram preservados; tente novamente.';
+          setResult({ ok: false, message });
+          toast.show(message, 'danger');
         } finally {
           setPending(false);
         }
@@ -194,6 +195,7 @@ export function ActionButton({
   const [pending, setPending] = useState(false);
   const [result, setResult] = useState<ActionResult<unknown> | null>(null);
   const router = useRouter();
+  const toast = useToast();
   return (
     <div>
       <Button
@@ -207,9 +209,12 @@ export function ActionButton({
             Object.entries(fields).forEach(([k, v]) => form.set(k, v));
             const response = await invokeAction(action, form);
             setResult(response);
+            toast.show(response.message, response.ok ? 'success' : 'danger');
             if (response.ok) router.refresh();
           } catch {
-            setResult({ ok: false, message: 'Não foi possível concluir. Tente novamente.' });
+            const message = 'Não foi possível concluir. Tente novamente.';
+            setResult({ ok: false, message });
+            toast.show(message, 'danger');
           } finally {
             setPending(false);
           }
