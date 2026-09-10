@@ -1819,6 +1819,7 @@ Relationships: [{foreignKeyName:"workflows_created_by_fkey";columns:["created_by
 "create_ledger_entry": { Args: {"book":string;"period":string;"entry_date":string;"entry_description":string;"entry_reference":string;"idempotency":string;"entry_lines":Json;"source_document"?:string;"entry_source"?:string}; Returns: string };
 "create_organization": { Args: {"org_name":string;"person_name":string;"department_names":string[]}; Returns: string };
 "create_verified_import": { Args: {"payload":string;"signature":string}; Returns: string };
+"discard_ledger_entry": { Args: {"entry":string;"expected_version":number}; Returns: undefined };
 "emit_due_notifications": { Args: {}; Returns: undefined };
 "enqueue_due_operis_jobs": { Args: {}; Returns: number };
 "ensure_dp_workflow": { Args: {"org_id":string}; Returns: string };

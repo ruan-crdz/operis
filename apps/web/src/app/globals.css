@@ -1343,6 +1343,38 @@ td small {
 .assistant-composer .input {
   flex: 1;
 }
+.ledger-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+}
+.ledger-line-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.5fr auto;
+  gap: 8px;
+  align-items: center;
+}
+.ledger-totals {
+  display: flex;
+  gap: 24px;
+  font-size: 13px;
+  font-family: var(--font-mono, monospace);
+}
+.ledger-balanced {
+  color: var(--primary);
+  font-weight: 500;
+}
+.ledger-unbalanced {
+  color: var(--danger);
+  font-weight: 500;
+}
+@media (max-width: 720px) {
+  .ledger-line-row {
+    grid-template-columns: 1fr;
+  }
+}
 .chip-group {
   display: flex;
   flex-wrap: wrap;

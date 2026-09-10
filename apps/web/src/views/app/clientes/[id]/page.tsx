@@ -7,15 +7,17 @@ import { check } from '@/client/actions/helpers';
 import { ClientForm } from '@/features/clients/client-form';
 import { ActionButton, ActionForm } from '@/features/forms/action-form';
 import { archiveClient, createCompetence, updateCompetence } from '@/client/actions/clients';
+import { LedgerPanel } from '@/features/ledger/panel';
 export default async function ClientDetail({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; competence?: string; account?: string }>;
 }) {
   const { id } = await params;
-  const tab = (await searchParams).tab ?? 'overview';
+  const { tab: rawTab, competence, account } = await searchParams;
+  const tab = rawTab ?? 'overview';
   const { db, orgId, permissions } = await requirePermission('clients.read');
   const { data: client, error } = await db
     .from('clients')
@@ -68,6 +70,7 @@ export default async function ClientDetail({
     ['tasks', 'Tarefas'],
     ['documents', 'Documentos'],
     ['competencies', 'Competências'],
+    ['ledger', 'Contábil'],
     ['employees', 'Colaboradores importados'],
     ['history', 'Histórico'],
     ['settings', 'Configurações'],
@@ -281,6 +284,8 @@ export default async function ClientDetail({
             />
           )}
         </Panel>
+      ) : tab === 'ledger' ? (
+        await LedgerPanel({ db, orgId, clientId: id, permissions, competence, account })
       ) : tab === 'history' ? (
         <Panel>
           {history.data?.length ? (
