@@ -8,6 +8,8 @@ const mapType = (t) =>
     ? `${mapType(t.slice(0, -2))}[]`
     : ['json', 'jsonb'].includes(t)
       ? 'Json'
+      : t === 'record'
+        ? 'Json'
       : t === 'boolean'
         ? 'boolean'
         : ['integer', 'bigint', 'smallint', 'numeric', 'double precision', 'real'].includes(t)
@@ -42,8 +44,10 @@ output += '}; Views: { [_ in never]: never }; Functions: {\n';
 const { rows: funcs } = await db.query(
   `select p.proname,p.proargnames,array(select format_type(t,null) from unnest(p.proargtypes::oid[]) t) types,format_type(p.prorettype,null) result,p.pronargdefaults from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.prorettype<>'trigger'::regtype order by p.proname`,
 );
-for (const f of funcs)
-  output += `${JSON.stringify(f.proname)}: { Args: {${(f.proargnames ?? []).map((name, i) => `${JSON.stringify(name)}${i >= f.types.length - f.pronargdefaults ? '?' : ''}:${mapType(f.types[i])}`).join(';')}}; Returns: ${mapType(f.result)} };\n`;
+for (const f of funcs) {
+  const inputNames = (f.proargnames ?? []).slice(0, f.types.length);
+  output += `${JSON.stringify(f.proname)}: { Args: {${inputNames.map((name, i) => `${JSON.stringify(name)}${i >= f.types.length - f.pronargdefaults ? '?' : ''}:${mapType(f.types[i])}`).join(';')}}; Returns: ${mapType(f.result)} };\n`;
+}
 output +=
   '}; Enums: { [_ in never]: never }; CompositeTypes: { [_ in never]: never } } };\nexport type Tables<T extends keyof Database["public"]["Tables"]> = Database["public"]["Tables"][T]["Row"];\n';
 await writeFile('packages/types/src/database.ts', output);
