@@ -126,8 +126,17 @@ export function PageHeader({
     </header>
   );
 }
-export function Panel({ className, ...props }: HTMLAttributes<HTMLElement>) {
-  return <section {...props} className={cn('panel', className)} />;
+export function Panel({
+  className,
+  loading,
+  children,
+  ...props
+}: HTMLAttributes<HTMLElement> & { loading?: boolean }) {
+  return (
+    <section {...props} className={cn('panel', className)} aria-busy={loading}>
+      {loading ? <Skeleton style={{ height: '100%', minHeight: 80 }} /> : children}
+    </section>
+  );
 }
 export function EmptyState({
   title,
@@ -167,12 +176,15 @@ export function Stat({
   value,
   caption,
   tone = 'neutral',
+  loading,
 }: {
   label: string;
   value: number;
   caption: string;
   tone?: string;
+  loading?: boolean;
 }) {
+  if (loading) return <Skeleton style={{ height: 88 }} aria-busy="true" aria-label={label} />;
   return (
     <div className={`stat stat-${tone}`}>
       <span>{label}</span>

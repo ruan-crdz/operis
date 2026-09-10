@@ -309,6 +309,36 @@ textarea {
     animation: none;
   }
 }
+.nav-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 1100;
+  overflow: hidden;
+  background: transparent;
+}
+.nav-progress-bar {
+  height: 100%;
+  width: 40%;
+  background: var(--primary);
+  animation: nav-progress-slide 1s ease-in-out infinite;
+}
+@keyframes nav-progress-slide {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(350%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-progress-bar {
+    animation: none;
+    width: 100%;
+  }
+}
 .toast-region {
   position: fixed;
   top: 16px;

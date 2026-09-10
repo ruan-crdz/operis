@@ -30,7 +30,7 @@ export const routes = {
   '/': () => import('@/views/page'),
   '/recuperar-senha': () => import('@/views/recuperar-senha/page'),
 };
-/** Resolves a pathname to its route key (matching `[id]` segments), for both loading and skeleton lookup. */
+/** Resolves a pathname to its route key (matching `[id]` segments). */
 export function matchRoute(pathname: string): { route: keyof typeof routes; id: string } | undefined {
   const exact = Object.keys(routes).find((r) => r === pathname) as keyof typeof routes | undefined;
   if (exact) return { route: exact, id: '' };

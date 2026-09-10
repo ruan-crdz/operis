@@ -2,7 +2,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Alert, Button, ToastProvider } from '@operis/ui';
 import { routes, matchRoute } from './routes';
-import { routeSkeletons, FormSkeleton } from './skeletons';
 import { Navigation, router, routeLocation, useLocation } from './navigation';
 import { applyPreferences } from './preferences';
 import { createClient, isConfigured } from '@/client/db/client';
@@ -41,6 +40,7 @@ export default function Application() {
   const [revision, setRevision] = useState(0);
   const [screen, setScreen] = useState<{ key: string; node: ReactNode }>();
   const key = `${location}:${revision}`;
+  const navigating = screen?.key !== key;
   useEffect(() => {
     applyPreferences();
     const refresh = () => setRevision((n) => n + 1);
@@ -104,14 +104,17 @@ export default function Application() {
   }, [location, key]);
   return (
     <ToastProvider>
-      {screen?.key === key ? (
-        <div key={key}>{screen.node}</div>
+      {navigating && (
+        <div className="nav-progress" role="status" aria-label="Carregando">
+          <div className="nav-progress-bar" />
+        </div>
+      )}
+      {screen ? (
+        <div key={screen.key}>{screen.node}</div>
       ) : (
-        (() => {
-          const match = matchRoute(new URL(location, 'https://operis.invalid').pathname);
-          const Placeholder = match ? routeSkeletons[match.route] : FormSkeleton;
-          return <Placeholder />;
-        })()
+        <main id="main" className="panel-pad" role="status" aria-live="polite">
+          Carregando Operis…
+        </main>
       )}
     </ToastProvider>
   );
