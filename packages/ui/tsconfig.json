@@ -1,0 +1,1 @@
+{ "extends": "@operis/config/tsconfig", "include": ["src"] }

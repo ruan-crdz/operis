@@ -1,0 +1,3 @@
+# Operis
+
+Leia AGENTS.md e docs/architecture.md. Dados reais apenas via Supabase; demonstração somente por seed. RLS e isolamento por organization_id obrigatórios. Mutations verificam usuário e permissão no servidor e banco. Sem service role no browser. Sem lógica de domínio em componentes. Use Operis UI e tokens semânticos, light padrão, dark e densidade persistidos. Dinheiro usa decimal.js/numeric. IA contextual, saídas estruturadas, minimização e aprovação humana; nunca calcular folha ou tributos por IA. Testar integridade, falhas, concorrência e isolamento. Toda funcionalidade visível deve ter persistência e tratamento de erro reais.

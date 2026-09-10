@@ -1,0 +1,8 @@
+{
+  "name": "@operis/config",
+  "private": true,
+  "version": "0.1.0",
+  "exports": {
+    "./tsconfig": "./tsconfig.json"
+  }
+}

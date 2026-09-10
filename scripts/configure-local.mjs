@@ -1,0 +1,12 @@
+import { spawnSync } from 'node:child_process';
+import { existsSync,writeFileSync } from 'node:fs';
+const destination='apps/web/.env.local';
+if(existsSync(destination))throw new Error('apps/web/.env.local já existe. Preserve suas configurações; preencha as variáveis manualmente.');
+const result=spawnSync(process.platform==='win32'?'pnpm.cmd':'pnpm',['exec','supabase','status','-o','json'],{encoding:'utf8',shell:process.platform==='win32'});
+if(result.status!==0)throw new Error('Inicie o Supabase local primeiro.');
+const settings=JSON.parse(result.stdout);
+const url=settings.API_URL,key=settings.PUBLISHABLE_KEY??settings.ANON_KEY;
+if(!url||!key)throw new Error('URL ou chave pública ausentes na configuração local.');
+if(!['127.0.0.1','localhost'].includes(new URL(url).hostname))throw new Error('Este script configura somente Supabase local.');
+writeFileSync(destination,`NEXT_PUBLIC_APP_URL=http://localhost:3000\nNEXT_PUBLIC_SUPABASE_URL=${url}\nNEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${key}\nOPENAI_API_KEY=\nOPENAI_MODEL=\n`);
+console.log('Configuração local criada em apps/web/.env.local. Nenhuma chave privilegiada foi copiada.');

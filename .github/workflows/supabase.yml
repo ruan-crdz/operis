@@ -1,0 +1,43 @@
+name: Configurar Supabase
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: operis-supabase
+  cancel-in-progress: false
+jobs:
+  backend:
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+      NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}
+      NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: node scripts/validate-public-env.mjs
+      - name: Validar credenciais de implantação
+        run: |
+          test -n "$SUPABASE_ACCESS_TOKEN" || { echo 'Preencha o secret SUPABASE_ACCESS_TOKEN'; exit 1; }
+          test -n "$SUPABASE_DB_PASSWORD" || { echo 'Preencha o secret SUPABASE_DB_PASSWORD'; exit 1; }
+          [[ "$SUPABASE_PROJECT_REF" =~ ^[a-z]{20}$ ]] || { echo 'Preencha a variável SUPABASE_PROJECT_REF'; exit 1; }
+      - name: Conectar ao projeto escolhido
+        run: pnpm exec supabase link --project-ref "$SUPABASE_PROJECT_REF"
+      - name: Aplicar migrations pendentes (sem reset ou seed)
+        run: pnpm exec supabase db push --yes
+      - name: Configurar serviço privado
+        run: node scripts/configure-cloud.mjs
+      - run: pnpm edge:build
+      - name: Publicar função de arquivos e IA
+        run: pnpm exec supabase functions deploy operis --use-api --project-ref "$SUPABASE_PROJECT_REF"

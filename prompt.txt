@@ -1,0 +1,4024 @@
+Você está iniciando do ZERO um produto SaaS B2B chamado **Operis**.
+
+A pasta atual está vazia.
+
+Você atuará simultaneamente como:
+
+* Principal Software Engineer;
+* Staff Frontend Engineer;
+* Staff Backend Engineer;
+* Software Architect;
+* Database Architect;
+* Security Engineer;
+* Staff Product Designer;
+* UX Engineer;
+* Design Systems Engineer;
+* QA Automation Engineer;
+* DevOps Engineer;
+* especialista em SaaS multi-tenant enterprise.
+
+Não trate este projeto como hackathon, protótipo visual, landing page ou demonstração.
+
+O objetivo é construir a fundação de um **produto comercial real**, destinado futuramente a escritórios de contabilidade de pequeno, médio e grande porte no Brasil.
+
+O software deverá ser arquitetado desde o início para eventualmente suportar milhares de escritórios, milhares de usuários, centenas de milhares de empresas-clientes, milhões de tarefas, documentos, eventos e processamentos.
+
+Ao mesmo tempo, evite overengineering desnecessário.
+
+A arquitetura deve ser sólida, modular, testável e preparada para crescer.
+
+---
+
+# 1. VISÃO DO PRODUTO
+
+Nome:
+
+**Operis**
+
+Posicionamento:
+
+**O sistema operacional da contabilidade.**
+
+A Operis não deve ser apenas outro ERP contábil.
+
+Ela deve funcionar como a camada operacional que organiza, automatiza e supervisiona o trabalho de escritórios contábeis.
+
+O conceito central é:
+
+entrada de dados/documentos
+→ interpretação
+→ validação
+→ workflow
+→ processamento
+→ revisão
+→ aprovação
+→ integração/transmissão
+→ monitoramento
+→ resolução de exceções
+→ armazenamento das evidências
+→ auditoria completa.
+
+O sistema futuramente deverá atender:
+
+* Departamento Pessoal;
+* Folha de pagamento;
+* Fiscal;
+* Tributário;
+* Contábil;
+* Societário;
+* BPO Financeiro;
+* Obrigações acessórias;
+* Compliance;
+* Gestão documental;
+* Gestão operacional;
+* relacionamento com clientes;
+* automações;
+* inteligência artificial;
+* integrações governamentais e privadas.
+
+NÃO implementar cálculos legais falsos ou simulados apenas para “parecer funcionar”.
+
+Nesta primeira etapa não precisamos implementar todo o motor fiscal/folha.
+
+Precisamos construir a infraestrutura correta sobre a qual esses motores serão adicionados posteriormente.
+
+---
+
+# 2. PRINCÍPIO FUNDAMENTAL
+
+Tudo que aparecer como funcional na interface deve realmente funcionar.
+
+É proibido:
+
+* botão que não faz nada;
+* tela puramente decorativa;
+* dado hardcoded fingindo ser dado real;
+* upload fake;
+* IA fake;
+* estatística inventada;
+* toast dizendo sucesso se nenhuma persistência ocorreu;
+* dashboard alimentado por arrays locais;
+* CRUD sem banco;
+* Kanban que perde dados ao atualizar a página;
+* permissões somente escondidas pelo frontend;
+* componente chamado “AI” que retorna texto estático.
+
+Dados de demonstração podem existir SOMENTE por meio de um seed explícito no banco.
+
+---
+
+# 3. ESCOPO DA PRIMEIRA GRANDE ENTREGA
+
+Ao finalizar esta execução, quero conseguir iniciar o projeto localmente e utilizar um MVP estrutural real contendo:
+
+1. autenticação;
+2. criação de organização/escritório;
+3. perfis;
+4. avatar;
+5. membros;
+6. departamentos;
+7. permissões;
+8. clientes;
+9. dashboard operacional;
+10. tarefas;
+11. Kanban;
+12. comentários;
+13. documentos;
+14. solicitações de documentos;
+15. upload real para Supabase Storage;
+16. competências;
+17. notificações internas;
+18. auditoria;
+19. preferências;
+20. temas;
+21. modo claro e escuro;
+22. densidade compacta/confortável;
+23. wizard real de importação de planilhas;
+24. análise das colunas;
+25. mapeamento manual;
+26. sugestão de mapeamento por IA;
+27. validações;
+28. revisão;
+29. aprovação;
+30. persistência do processo;
+31. possibilidade de salvar um template de importação;
+32. estrutura inicial para execução assíncrona;
+33. integração real com Supabase;
+34. integração real com OpenAI;
+35. testes automatizados;
+36. documentação técnica.
+
+O resultado deve ser utilizável por uma pessoa real.
+
+---
+
+# 4. STACK PRINCIPAL
+
+Utilize como baseline tecnológica:
+
+* Node.js 24 LTS;
+* pnpm;
+* monorepo;
+* Turborepo;
+* TypeScript strict;
+* Next.js 16;
+* App Router;
+* React 19;
+* Tailwind CSS 4;
+* Supabase;
+* PostgreSQL;
+* Supabase Auth;
+* Supabase Storage;
+* Supabase Realtime;
+* Supabase Queues;
+* Supabase Cron;
+* Supabase Edge Functions quando apropriado;
+* OpenAI Node SDK;
+* OpenAI Responses API;
+* Zod;
+* React Hook Form;
+* TanStack Query;
+* TanStack Table;
+* TanStack Virtual quando necessário;
+* Radix UI Primitives;
+* Lucide;
+* CVA — class-variance-authority;
+* clsx;
+* tailwind-merge;
+* date-fns;
+* decimal.js;
+* Vitest;
+* React Testing Library;
+* Playwright;
+* axe-core/Playwright para acessibilidade.
+
+Use versões estáveis compatíveis.
+
+Não fixe versões antigas desnecessariamente.
+
+Gere e versione o lockfile.
+
+---
+
+# 5. POR QUE ESSA ARQUITETURA
+
+Next.js será utilizado como framework principal web/full-stack.
+
+React Server Components devem ser padrão sempre que uma tela não precisar de estado/interação no browser.
+
+Não transforme tudo em `"use client"`.
+
+Client Components devem existir apenas quando houver necessidade concreta de:
+
+* interação;
+* eventos do browser;
+* drag-and-drop;
+* formulários interativos;
+* estado local;
+* realtime;
+* componentes Radix que dependam do client.
+
+Supabase será responsável principalmente por:
+
+* PostgreSQL;
+* autenticação;
+* autorização via RLS;
+* armazenamento;
+* realtime;
+* filas;
+* jobs agendados;
+* funções leves.
+
+Operações longas e pesadas devem ser abstraídas para execução em background.
+
+Edge Functions não devem assumir processamento pesado indefinidamente.
+
+Toda operação deve ser projetada para ser idempotente quando fizer sentido.
+
+---
+
+# 6. MONOREPO
+
+Estruture aproximadamente:
+
+```text
+/
+  apps/
+    web/
+  packages/
+    ui/
+    domain/
+    config/
+    types/
+  supabase/
+    migrations/
+    functions/
+    tests/
+    seed.sql
+  docs/
+    adr/
+  fixtures/
+  .github/
+    workflows/
+    copilot-instructions.md
+  package.json
+  pnpm-workspace.yaml
+  turbo.json
+  README.md
+  AGENTS.md
+  .env.example
+```
+
+`packages/ui`
+
+Será a biblioteca oficial de componentes da Operis:
+
+**Operis UI**
+
+Não quero que páginas criem estilos arbitrários repetidamente.
+
+`packages/domain`
+
+Deve conter lógica de domínio independente da UI sempre que possível.
+
+Exemplos:
+
+* dinheiro;
+* competências;
+* validações;
+* workflow;
+* importações;
+* permissões;
+* regras de status.
+
+`packages/types`
+
+Tipos compartilhados que realmente precisem atravessar aplicações/pacotes.
+
+Evite criar abstrações sem necessidade.
+
+---
+
+# 7. DESIGN SYSTEM — OPERIS UI
+
+Não utilize um design genérico de SaaS.
+
+Não quero:
+
+* página completamente branca;
+* azul royal padrão;
+* cards brancos com sombra por todos os lados;
+* gradiente azul/roxo típico de startup;
+* glassmorphism;
+* excesso de border-radius;
+* ícones aleatórios;
+* enormes espaços vazios;
+* dashboard que parece template comprado;
+* dezenas de cores saturadas;
+* visual infantil;
+* animações desnecessárias.
+
+O produto trabalha com informações financeiras e operacionais densas.
+
+Ele precisa parecer:
+
+* moderno;
+* sofisticado;
+* extremamente organizado;
+* rápido;
+* preciso;
+* confiável;
+* profissional;
+* diferenciado.
+
+A inspiração conceitual pode vir da qualidade de interfaces como Linear, Stripe, Vercel, Notion e ferramentas enterprise modernas, mas NÃO copie visualmente nenhuma delas.
+
+Crie identidade própria.
+
+---
+
+# 8. PALETA OPERIS
+
+Não utilize azul como cor principal.
+
+Utilize uma identidade baseada em:
+
+**graphite + warm bone + jade + violet técnico.**
+
+Tema claro padrão:
+
+```text
+canvas              #F3EFE6
+surface             #FBF8F1
+surface-secondary   #EAE4D8
+
+text-primary        #161A17
+text-secondary      #4D554F
+
+border-subtle       #D7D0C4
+border-strong       #7A817B
+
+brand-primary       #2C6E5B
+brand-primary-soft  #D9EAE3
+
+ai-primary          #5A3DAA
+ai-soft             #ECE7FA
+
+warning-text        #6C4B00
+warning-bg          #FFF1C2
+
+danger-text         #8F2D24
+danger-bg           #FCE8E6
+```
+
+Tema escuro:
+
+```text
+canvas              #121512
+surface             #1A1F1B
+surface-secondary   #222922
+
+text-primary        #F2EEE6
+text-secondary      #B8C0B8
+
+border-strong       #6F786F
+
+brand-primary       #7AC7A8
+
+ai-primary          #B7A7FF
+warning             #F0C36A
+danger              #FF9C92
+```
+
+Não interprete esses valores como nomes visuais fixos em componentes.
+
+Implemente semantic design tokens.
+
+Exemplo:
+
+```css
+--background
+--foreground
+
+--surface
+--surface-raised
+--surface-muted
+
+--border
+--border-strong
+
+--primary
+--primary-foreground
+
+--secondary
+--secondary-foreground
+
+--accent
+--accent-foreground
+
+--muted
+--muted-foreground
+
+--success
+--warning
+--danger
+
+--ai
+--ai-foreground
+```
+
+Os componentes devem consumir tokens semânticos.
+
+Nunca utilizar `#2C6E5B` diretamente dentro de cinquenta componentes.
+
+---
+
+# 9. JUSTIFICATIVA TÉCNICA DA PALETA
+
+Não use “psicologia das cores” pseudocientífica.
+
+A justificativa deve ser objetiva.
+
+A combinação foi escolhida para proporcionar:
+
+1. diferenciação em relação ao padrão branco/azul predominante em software corporativo;
+2. contraste alto;
+3. hierarquia visual;
+4. menor aparência de template genérico;
+5. diferenciação clara de IA usando violeta;
+6. diferenciação semântica de sucesso, atenção e erro.
+
+Contrastes previamente calculados:
+
+```text
+#161A17 em #F3EFE6 = aproximadamente 15.32:1
+
+#4D554F em #F3EFE6 = aproximadamente 6.71:1
+
+#2C6E5B em #FBF8F1 = aproximadamente 5.68:1
+
+#FBF8F1 em #2C6E5B = aproximadamente 5.68:1
+
+#7A817B contra #FBF8F1 = aproximadamente 3.77:1
+
+#5A3DAA em #FBF8F1 = aproximadamente 7.38:1
+
+#6C4B00 em #FFF1C2 = aproximadamente 7.04:1
+
+#8F2D24 em #FCE8E6 = aproximadamente 6.94:1
+```
+
+WCAG 2.2 AA exige aproximadamente:
+
+```text
+texto normal        >= 4.5:1
+texto grande        >= 3:1
+componentes críticos não textuais >= 3:1
+```
+
+Todos os componentes devem manter conformidade WCAG 2.2 AA.
+
+Sempre que você introduzir uma nova combinação de cor, confira contraste.
+
+Cor nunca pode ser a única indicação de estado.
+
+Exemplo errado:
+
+“vermelho significa erro”.
+
+Exemplo correto:
+
+ícone + texto “Erro” + cor.
+
+---
+
+# 10. LIGHT MODE COMO PADRÃO
+
+A Operis deve possuir dark mode.
+
+Porém o modo padrão deve ser light.
+
+Não use branco puro como canvas.
+
+Use o warm bone definido anteriormente.
+
+Há pesquisas de legibilidade de display indicando vantagem de polaridade positiva — texto escuro em fundo claro — em diversas condições de leitura.
+
+Portanto:
+
+default = Operis Light.
+
+Dark = preferência do usuário.
+
+System = segue sistema operacional.
+
+---
+
+# 11. TIPOGRAFIA
+
+Utilize **Geist Sans** como família principal.
+
+Utilize **Geist Mono** apenas para informações tecnicamente apropriadas:
+
+* IDs;
+* códigos;
+* hashes;
+* protocolos;
+* trechos técnicos;
+* eventualmente colunas numéricas específicas.
+
+A decisão por uma sans-serif moderna NÃO deve ser justificada dizendo falsamente que “sans-serif é sempre cientificamente mais legível”.
+
+A literatura sobre serif vs sans-serif é mista.
+
+A escolha da Geist deve ser justificada principalmente por:
+
+* desenho desenvolvido para interfaces digitais;
+* boa densidade;
+* família consistente;
+* caracteres modernos;
+* ótimo comportamento em interfaces;
+* excelente integração com aplicações web;
+* suporte adequado a apresentações numéricas.
+
+Para números financeiros utilize:
+
+```css
+font-variant-numeric: tabular-nums;
+```
+
+Isso é obrigatório em:
+
+* valores monetários;
+* tabelas;
+* dashboards;
+* folha;
+* impostos;
+* comparações;
+* totais;
+* KPIs.
+
+Valores alinhados numericamente devem ocupar largura consistente.
+
+---
+
+# 12. ESCALA TIPOGRÁFICA
+
+Evite títulos gigantes.
+
+Este é um sistema operacional B2B, não uma landing page.
+
+Base aproximada:
+
+```text
+Display       32/38
+H1            26/32
+H2            22/28
+H3            18/24
+Body          14/20
+Body Large    16/24
+Label         13/18
+Caption       12/16
+Micro         11/14
+```
+
+Peso:
+
+```text
+400 regular
+500 medium
+600 semibold
+```
+
+Evite `font-weight: 700/800/900` na UI comum.
+
+Hierarquia deve vir também de:
+
+* tamanho;
+* posição;
+* espaçamento;
+* tonalidade.
+
+---
+
+# 13. SPACING
+
+Utilize grid de 4 px.
+
+Tokens:
+
+```text
+1 = 4
+2 = 8
+3 = 12
+4 = 16
+5 = 20
+6 = 24
+8 = 32
+10 = 40
+12 = 48
+16 = 64
+```
+
+Não inventar spacing arbitrário a cada tela.
+
+---
+
+# 14. BORDER RADIUS
+
+Evite estética excessivamente “fofa”.
+
+Utilize aproximadamente:
+
+```text
+xs    4
+sm    6
+md    8
+lg    10
+xl    12
+full  apenas elementos circulares/pills
+```
+
+Cards não precisam necessariamente de sombra.
+
+Prefira:
+
+* contraste de superfície;
+* borda sutil;
+* espaçamento.
+
+---
+
+# 15. SHADOWS
+
+Sombras somente quando comunicarem elevação real:
+
+* dropdown;
+* modal;
+* floating command menu;
+* popover;
+* drawer sobre conteúdo.
+
+Cards normais não devem parecer flutuando.
+
+---
+
+# 16. ANIMAÇÕES
+
+Motion deve comunicar mudança de estado.
+
+Duração predominante:
+
+```text
+120ms–200ms
+```
+
+Utilize easing suave.
+
+Não crie:
+
+* bounce;
+* elastic;
+* animações decorativas;
+* loading teatral.
+
+Implemente:
+
+```css
+@media (prefers-reduced-motion: reduce)
+```
+
+e reduza/remova animações quando solicitado pelo usuário.
+
+---
+
+# 17. OPERIS UI — COMPONENT LIBRARY
+
+NÃO utilize uma biblioteca fechada de componentes que determine nossa aparência.
+
+Use Radix UI como camada de primitives acessíveis.
+
+Construa nossa biblioteca por cima.
+
+Radix é apropriado porque fornece primitives não opinativos visualmente e trata vários comportamentos complexos de:
+
+* ARIA;
+* foco;
+* teclado;
+* interação.
+
+Crie inicialmente componentes como:
+
+```text
+Button
+IconButton
+ButtonGroup
+Input
+Textarea
+SearchInput
+PasswordInput
+CurrencyInput
+PercentageInput
+Select
+Combobox
+MultiSelect
+Checkbox
+RadioGroup
+Switch
+DatePicker
+MonthPicker
+
+FormField
+FormLabel
+FormDescription
+FormError
+
+Badge
+StatusBadge
+Avatar
+AvatarGroup
+
+Tooltip
+Popover
+DropdownMenu
+ContextMenu
+
+Dialog
+ConfirmDialog
+Drawer
+Sheet
+
+Tabs
+Accordion
+
+Alert
+Toast
+
+Skeleton
+Spinner
+Progress
+
+Breadcrumb
+Pagination
+
+EmptyState
+
+PageHeader
+SectionHeader
+
+Sidebar
+Topbar
+
+CommandPalette
+
+FilterBar
+
+DataTable
+DataGrid
+
+FileDropzone
+FileCard
+FilePreview
+
+Stepper
+
+KanbanBoard
+KanbanColumn
+TaskCard
+
+ApprovalBar
+
+AuditTimeline
+
+NotificationCenter
+
+Stat
+StatGroup
+
+ChartContainer
+```
+
+Todo componente deve possuir:
+
+* API tipada;
+* variantes com CVA;
+* estados;
+* disabled;
+* loading quando apropriado;
+* keyboard support;
+* focus-visible;
+* acessibilidade;
+* dark mode;
+* density mode;
+* testes relevantes.
+
+---
+
+# 18. ACESSIBILIDADE
+
+Meta:
+
+**WCAG 2.2 AA no mínimo.**
+
+Focus indicator deve ser claramente perceptível.
+
+Use outline equivalente a aproximadamente 2 px quando apropriado e contraste suficiente.
+
+Não remova outline sem substituição.
+
+Todos os fluxos principais precisam funcionar sem mouse.
+
+Isto é especialmente importante no Kanban.
+
+Drag-and-drop NÃO pode ser o único método para mover um card.
+
+Cada card também deverá permitir:
+
+`Mover para...`
+
+por:
+
+* menu;
+* teclado;
+* comando acessível.
+
+Isso também atende ao princípio de não depender exclusivamente de dragging.
+
+Modais devem:
+
+* capturar foco corretamente;
+* devolver foco ao elemento anterior;
+* responder a Escape;
+* possuir label/description.
+
+---
+
+# 19. DENSIDADE
+
+Usuários de contabilidade trabalham com muita informação.
+
+Criar duas densidades:
+
+```text
+Comfortable
+Compact
+```
+
+Salvar preferência no usuário.
+
+Compact não significa ilegível.
+
+Exemplo:
+
+linha de tabela confortável ≈ 48 px.
+
+linha compacta ≈ 40 px.
+
+Não use enormes cards para mostrar um número e uma legenda.
+
+Utilize espaço de forma eficiente.
+
+---
+
+# 20. RESPONSIVIDADE
+
+Prioridade:
+
+desktop.
+
+Depois:
+
+tablet.
+
+Mobile deve funcionar para operações essenciais, mas este produto é workstation-first.
+
+Breakpoints devem permitir:
+
+* sidebar expandida;
+* sidebar compacta;
+* navegação móvel.
+
+Tabelas extensas podem possuir scroll horizontal quando realmente necessário.
+
+Não destrua data grids tentando encaixar 15 colunas verticalmente em celular.
+
+---
+
+# 21. AUTENTICAÇÃO
+
+Utilize Supabase Auth.
+
+Implementar:
+
+* login;
+* logout;
+* recuperação de senha;
+* confirmação adequada;
+* sessão persistente;
+* proteção de rotas;
+* SSR compatível.
+
+Arquitetar para posteriormente suportar:
+
+* MFA;
+* SSO corporativo;
+* Microsoft;
+* Google.
+
+Não é obrigatório ativar tudo agora.
+
+---
+
+# 22. MULTI-TENANCY
+
+Esta decisão é crítica.
+
+Uma organização representa inicialmente um escritório contábil.
+
+Um usuário pode futuramente pertencer a múltiplas organizações.
+
+Estrutura básica:
+
+```text
+auth.users
+profiles
+
+organizations
+organization_members
+organization_settings
+```
+
+Toda entidade pertencente a um escritório deverá possuir `organization_id`.
+
+Exemplos:
+
+```text
+clients
+tasks
+documents
+workflows
+imports
+notifications
+```
+
+Nunca confiar apenas no organization ID recebido pelo frontend.
+
+RLS deve validar pertencimento.
+
+---
+
+# 23. ROW LEVEL SECURITY
+
+RLS NÃO É OPCIONAL.
+
+Ative RLS em todas as tabelas expostas.
+
+Crie helpers PostgreSQL para:
+
+```text
+is_org_member(org_id)
+has_org_permission(org_id, permission)
+```
+
+onde apropriado.
+
+Teste casos positivos e negativos.
+
+Especialmente:
+
+usuário A da organização A NÃO consegue acessar:
+
+* clientes da B;
+* documentos da B;
+* tarefas da B;
+* imports da B;
+* comentários da B;
+* audit logs da B.
+
+Nem mesmo alterando diretamente uma request.
+
+Crie testes pgTAP/Supabase para isso.
+
+A `service_role` bypassa RLS.
+
+Portanto:
+
+**SUPABASE_SERVICE_ROLE_KEY NUNCA PODE SER EXPOSTA AO BROWSER.**
+
+---
+
+# 24. VARIÁVEIS DE AMBIENTE
+
+Criar `.env.example`.
+
+Nunca inserir secrets no repositório.
+
+Esperar aproximadamente:
+
+```text
+NEXT_PUBLIC_APP_URL=
+
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+
+SUPABASE_SERVICE_ROLE_KEY=
+
+OPENAI_API_KEY=
+OPENAI_MODEL=
+```
+
+`OPENAI_API_KEY` é exclusivamente server-side.
+
+Não utilizar `NEXT_PUBLIC_OPENAI_API_KEY`.
+
+Isso é proibido.
+
+`OPENAI_MODEL` deve ser configurável.
+
+Não hardcode o modelo em dezenas de arquivos.
+
+---
+
+# 25. OPENAI
+
+Utilizar SDK oficial.
+
+Utilizar a **Responses API**.
+
+Quando a resposta precisar obedecer uma estrutura, utilizar **Structured Outputs com JSON Schema**.
+
+Não pedir ao modelo:
+
+“me devolva um JSON nesse formato”
+
+e depois torcer para funcionar.
+
+Utilize schemas formais.
+
+Toda chamada de IA deve passar por nossa camada:
+
+```text
+AI Gateway
+```
+
+Por exemplo:
+
+```text
+src/server/ai/
+```
+
+Estrutura conceitual:
+
+```text
+aiClient
+aiModelConfig
+aiPrompts
+aiSchemas
+aiAudit
+aiErrors
+```
+
+---
+
+# 26. REGRAS DE IA
+
+IA é probabilística.
+
+Regras fiscais e trabalhistas são determinísticas.
+
+Portanto é PROIBIDO permitir que a IA seja a fonte final de verdade para:
+
+* salário;
+* INSS;
+* FGTS;
+* IR;
+* férias;
+* impostos;
+* lançamentos contábeis definitivos;
+* obrigações;
+* valor financeiro final.
+
+IA deve auxiliar tarefas como:
+
+* identificar colunas;
+* sugerir mapeamentos;
+* classificar documentos;
+* detectar possíveis anomalias;
+* resumir diferenças;
+* explicar erros;
+* gerar checklist;
+* auxiliar pesquisas;
+* sugerir próximos passos.
+
+Fluxo:
+
+```text
+AI suggestion
+→ confidence
+→ evidence/reason
+→ human review
+→ approval
+→ deterministic execution
+```
+
+Sempre registrar quando IA participou de uma decisão.
+
+---
+
+# 27. PRIMEIRA FEATURE REAL DE IA
+
+O primeiro uso prático será:
+
+**Spreadsheet Mapping Assistant.**
+
+Usuário envia Excel/CSV.
+
+Sistema extrai:
+
+* nomes das sheets;
+* cabeçalhos;
+* tipos inferidos;
+* exemplos limitados;
+* padrões;
+* quantidade de linhas.
+
+Em seguida a IA pode sugerir que:
+
+```text
+"Nome Func."
+```
+
+corresponde a:
+
+```text
+employee_name
+```
+
+ou:
+
+```text
+"CPF COLAB"
+→ employee_cpf
+```
+
+Cada sugestão deve possuir:
+
+```text
+targetField
+confidence
+reason
+```
+
+O usuário obrigatoriamente poderá editar.
+
+Nunca commit automaticamente por simples sugestão da IA.
+
+---
+
+# 28. PRIVACIDADE NA IA
+
+Não enviar uma planilha inteira para a OpenAI simplesmente por conveniência.
+
+Princípio:
+
+**data minimization.**
+
+Para inferência de schema/mapeamento, envie preferencialmente:
+
+* nome da coluna;
+* tipo detectado;
+* poucos exemplos;
+* exemplos mascarados quando possível.
+
+CPF, salário e outros dados pessoais devem ser tratados cuidadosamente.
+
+Crie funções de sanitização e seleção de amostras.
+
+Registre:
+
+* feature;
+* modelo;
+* prompt version;
+* timestamp;
+* duração;
+* tokens;
+* sucesso/erro;
+* entidade associada;
+* usuário que disparou.
+
+Não grave desnecessariamente conteúdo pessoal inteiro no audit da IA.
+
+---
+
+# 29. BANCO — ENTIDADES INICIAIS
+
+Crie migrations reais.
+
+Comece com algo próximo a:
+
+```text
+profiles
+
+organizations
+organization_members
+organization_settings
+
+departments
+
+roles
+permissions
+role_permissions
+member_roles
+
+clients
+client_contacts
+client_assignments
+
+competencies
+
+tasks
+task_comments
+task_dependencies
+task_events
+
+workflows
+workflow_versions
+workflow_steps
+workflow_runs
+workflow_step_runs
+
+documents
+document_requests
+document_request_items
+
+imports
+import_files
+import_sheets
+import_columns
+import_mappings
+import_validation_results
+import_templates
+
+approvals
+
+notifications
+notification_preferences
+
+audit_logs
+
+ai_runs
+
+user_preferences
+
+integration_connections
+webhook_events
+
+outbox_events
+```
+
+Não crie tabelas apenas porque estão listadas.
+
+Analise relações e normalize corretamente.
+
+Migrations devem ser reproduzíveis.
+
+---
+
+# 30. IDs E TIMESTAMPS
+
+Use UUID.
+
+Todas entidades relevantes devem ter:
+
+```text
+id
+created_at
+updated_at
+```
+
+quando fizer sentido.
+
+Timestamps em banco:
+
+`timestamptz`.
+
+Armazene em UTC.
+
+Apresente no timezone adequado do usuário.
+
+Default inicial:
+
+`America/Sao_Paulo`.
+
+---
+
+# 31. VALORES MONETÁRIOS
+
+Isto é CRÍTICO.
+
+Nunca utilize floating-point JavaScript para cálculos financeiros sérios.
+
+Não faça:
+
+```ts
+0.1 + 0.2
+```
+
+como fundamento de cálculo monetário.
+
+PostgreSQL:
+
+utilize `numeric`.
+
+TypeScript:
+
+utilize `decimal.js` quando houver cálculos.
+
+Crie abstrações de domínio.
+
+Rounding deve ser explícito.
+
+Quando no futuro implementarmos folha e impostos, cada regra deverá definir:
+
+* precisão intermediária;
+* regra de arredondamento;
+* precisão final.
+
+---
+
+# 32. COMPETÊNCIA
+
+Competência mensal é conceito de primeira classe.
+
+Exemplo:
+
+```text
+2026-09
+```
+
+Não trate como string aleatória.
+
+Crie tipo/helper próprio.
+
+Deve permitir:
+
+* competência anterior;
+* próxima;
+* comparação;
+* formatação pt-BR;
+* validação.
+
+---
+
+# 33. CLIENTES
+
+Tela `/clientes`.
+
+Precisa suportar:
+
+* buscar;
+* filtrar;
+* ordenar;
+* paginação;
+* adicionar;
+* editar;
+* arquivar;
+* acessar detalhe.
+
+Detalhe do cliente:
+
+```text
+Visão geral
+Operação
+Documentos
+Competências
+Tarefas
+Equipe
+Histórico
+Configurações
+```
+
+No MVP não precisa possuir toda informação fiscal brasileira existente.
+
+Mas a estrutura deve crescer sem reescrever tudo.
+
+---
+
+# 34. DEPARTAMENTOS
+
+Criar inicialmente:
+
+```text
+Departamento Pessoal
+Fiscal
+Contábil
+Societário
+BPO Financeiro
+Compliance
+Administração
+```
+
+Usuários podem estar vinculados a departamentos.
+
+Mas permissões não devem depender exclusivamente disso.
+
+Utilize RBAC.
+
+---
+
+# 35. RBAC
+
+Permissões iniciais podem incluir coisas como:
+
+```text
+organization.manage
+
+members.read
+members.manage
+
+clients.read
+clients.create
+clients.update
+clients.archive
+
+tasks.read
+tasks.create
+tasks.update
+tasks.assign
+
+documents.read
+documents.upload
+documents.manage
+
+imports.read
+imports.create
+imports.approve
+
+audit.read
+
+settings.manage
+```
+
+Um papel poderá conter várias permissões.
+
+Não use dezenas de `if role === admin`.
+
+Verifique permissions.
+
+---
+
+# 36. APP SHELL
+
+Após login:
+
+estrutura aproximada:
+
+```text
+Sidebar
+Topbar
+Main Content
+Command Palette
+Notification Center
+```
+
+Sidebar:
+
+```text
+Início
+
+Operação
+  Minha fila
+  Tarefas
+  Processos
+
+Clientes
+
+Departamentos
+  Departamento Pessoal
+  Fiscal
+  Contábil
+  Societário
+  BPO
+
+Documentos
+Importações
+
+Inteligência
+
+Relatórios
+
+Configurações
+```
+
+Itens devem aparecer conforme permissão.
+
+---
+
+# 37. SIDEBAR
+
+Desktop:
+
+expandida e recolhível.
+
+Estado persistido por usuário.
+
+Quando compacta:
+
+ícones + tooltip.
+
+Não criar quinze níveis de nesting.
+
+---
+
+# 38. TOPBAR
+
+Deve conter:
+
+* organização ativa;
+* busca global;
+* command palette;
+* notificações;
+* avatar/menu.
+
+Futuramente poderá conter seletor de organização.
+
+---
+
+# 39. COMMAND PALETTE
+
+Atalho:
+
+```text
+Ctrl/Cmd + K
+```
+
+Permitir rapidamente:
+
+* abrir cliente;
+* criar tarefa;
+* navegar;
+* abrir importação;
+* pesquisar.
+
+É uma ferramenta enterprise para usuários frequentes.
+
+---
+
+# 40. DASHBOARD
+
+O dashboard NÃO deve ser um amontoado de gráficos.
+
+Prioridade é decisão operacional.
+
+Mostrar coisas como:
+
+```text
+Pendências
+Atrasadas
+Aguardando cliente
+Em revisão
+Vencendo hoje
+Importações com erro
+Documentos pendentes
+Minha fila
+```
+
+Depois métricas.
+
+Usuário deve responder ao abrir:
+
+“O que precisa da minha atenção agora?”
+
+Todos os números vêm do banco.
+
+---
+
+# 41. TASK ENGINE
+
+Task deverá possuir aproximadamente:
+
+```text
+organization
+client
+competence
+title
+description
+status
+priority
+department
+assignee
+creator
+due_date
+started_at
+completed_at
+blocked_reason
+sla
+metadata
+```
+
+Histórico deve registrar mudanças importantes.
+
+---
+
+# 42. KANBAN
+
+Status inicial:
+
+```text
+Backlog
+
+Aguardando cliente
+
+Pronto
+
+Em andamento
+
+Revisão
+
+Bloqueado
+
+Concluído
+```
+
+No futuro o workflow definirá colunas.
+
+Drag and drop deve persistir imediatamente.
+
+Use optimistic UI somente com rollback consistente.
+
+Erro no backend:
+
+* devolver card;
+* informar usuário;
+* preservar integridade.
+
+Adicionar alternativa acessível:
+
+```text
+Mover para →
+```
+
+---
+
+# 43. MINHA FILA
+
+Tela importante.
+
+Mostrar tarefas atribuídas ao usuário ordenadas por urgência operacional.
+
+Agrupamentos úteis:
+
+```text
+Atrasado
+Hoje
+Próximos dias
+Sem prazo
+```
+
+Permitir filtros:
+
+* cliente;
+* departamento;
+* competência;
+* prioridade;
+* status.
+
+Filtros importantes devem refletir na URL quando fizer sentido.
+
+---
+
+# 44. DOCUMENTOS
+
+Storage privado no Supabase.
+
+Estrutura lógica de path:
+
+```text
+organizations/{organization_id}/clients/{client_id}/...
+```
+
+Não confiar apenas no path para segurança.
+
+Criar policies adequadas.
+
+Registrar metadata no banco.
+
+Exemplo:
+
+```text
+filename
+original_filename
+mime_type
+size
+storage_path
+checksum
+uploaded_by
+client
+competence
+category
+created_at
+```
+
+---
+
+# 45. SOLICITAÇÃO DE DOCUMENTOS
+
+Usuário interno deve conseguir criar uma solicitação:
+
+```text
+Cliente X
+Competência setembro/2026
+
+- folha de ponto
+- admissões
+- desligamentos
+- variáveis
+```
+
+Cada item:
+
+```text
+Pendente
+Recebido
+Validando
+Aceito
+Rejeitado
+```
+
+Isso futuramente alimentará notificações automáticas.
+
+---
+
+# 46. ALERTAS E PENDÊNCIAS
+
+Criar estrutura para:
+
+```text
+document_request_due
+task_due
+task_overdue
+approval_required
+import_failed
+import_requires_review
+```
+
+No MVP:
+
+notificações in-app reais.
+
+Email/WhatsApp podem ser adicionados posteriormente.
+
+---
+
+# 47. WIZARD DE IMPORTAÇÃO
+
+Esta é uma das features centrais do MVP.
+
+Fluxo completo:
+
+```text
+1 Upload
+2 Detecção
+3 Seleção de planilha
+4 Configuração
+5 Mapeamento
+6 Validação
+7 Revisão
+8 Aprovação
+9 Importação
+10 Resultado
+```
+
+Cada etapa deve ser persistida.
+
+Usuário pode:
+
+* sair;
+* voltar;
+* continuar depois.
+
+---
+
+# 48. UPLOAD
+
+Aceitar inicialmente:
+
+```text
+.csv
+.xlsx
+```
+
+Valide:
+
+* extensão;
+* MIME;
+* tamanho;
+* arquivo vazio;
+* parsing.
+
+Nunca executar macros.
+
+Não aceitar arquivos executáveis.
+
+Original deve permanecer imutável.
+
+---
+
+# 49. DETECÇÃO
+
+Após upload:
+
+identificar:
+
+```text
+sheets
+headers
+row count
+candidate header row
+empty columns
+duplicates
+basic inferred types
+```
+
+Exibir preview.
+
+Não carregar 100 mil linhas simultaneamente no DOM.
+
+Utilizar virtualização quando necessário.
+
+---
+
+# 50. MAPEAMENTO
+
+Tela de mapeamento deve ser excelente.
+
+Layout sugerido:
+
+esquerda:
+
+```text
+Coluna do arquivo
+Exemplos
+Tipo detectado
+```
+
+direita:
+
+```text
+Campo Operis
+Confiança
+Sugestão IA
+Status
+```
+
+Usuário pode selecionar outro destino.
+
+Mostrar:
+
+* campo obrigatório;
+* campo opcional;
+* duplicidade;
+* não mapeado.
+
+---
+
+# 51. IA NO MAPEAMENTO
+
+Botão:
+
+```text
+Sugerir mapeamento com IA
+```
+
+A IA NÃO deve sobrescrever decisão manual existente sem confirmação.
+
+Sugestão:
+
+```text
+Nome Funcionário
+→ employee_name
+98%
+
+Motivo:
+"O cabeçalho indica nome do colaborador e os valores possuem formato textual compatível."
+```
+
+Não apresentar confiança falsa com precisão científica.
+
+Se o modelo não fornecer probabilidade calibrada real, utilize faixas de confiança internas, por exemplo:
+
+```text
+alta
+média
+baixa
+```
+
+ou um score explicitamente rotulado como heurístico.
+
+---
+
+# 52. VALIDAÇÃO
+
+Antes de importar:
+
+executar regras determinísticas.
+
+Exemplos genéricos:
+
+```text
+campo obrigatório ausente
+formato inválido
+CPF estruturalmente inválido
+data inválida
+valor impossível de converter
+duplicidade
+linha vazia
+```
+
+Resultado:
+
+```text
+Errors
+Warnings
+Info
+```
+
+Errors bloqueiam commit quando necessário.
+
+Warnings exigem ciência quando apropriado.
+
+---
+
+# 53. REVIEW
+
+Antes de commit:
+
+mostrar resumo:
+
+```text
+Arquivo
+Sheet
+Linhas
+Válidas
+Com erro
+Ignoradas
+Mapeamentos
+Warnings
+```
+
+Usuário aprova.
+
+Somente então commit.
+
+---
+
+# 54. IMPORT TEMPLATE
+
+Após uma importação bem sucedida:
+
+usuário pode salvar:
+
+```text
+Template: Folha mensal — Cliente XPTO
+```
+
+No mês seguinte:
+
+sistema reconhece schema parecido.
+
+Sugere reutilizar mapeamento.
+
+Calcule fingerprint estrutural do arquivo.
+
+Se schema mudou:
+
+mostrar claramente:
+
+```text
+A estrutura deste arquivo mudou desde agosto.
+
+2 colunas novas
+1 coluna removida
+1 cabeçalho renomeado
+```
+
+Esse comportamento é altamente importante.
+
+---
+
+# 55. IDEMPOTÊNCIA DA IMPORTAÇÃO
+
+Não importar duas vezes simplesmente porque usuário clicou duplo.
+
+Criar mecanismo de:
+
+* idempotency key;
+* status;
+* transaction;
+* fingerprint quando apropriado.
+
+Statuses aproximadamente:
+
+```text
+uploaded
+parsing
+mapping
+validating
+awaiting_approval
+approved
+processing
+completed
+failed
+cancelled
+```
+
+---
+
+# 56. PROCESSAMENTO ASSÍNCRONO
+
+Use Supabase Queues para jobs quando fizer sentido.
+
+Arquitetar consumers.
+
+Operações devem possuir:
+
+```text
+attempt_count
+last_error
+scheduled_at
+started_at
+completed_at
+```
+
+Retries devem ser controlados.
+
+Não fazer infinite retry.
+
+Quando apropriado:
+
+exponential backoff.
+
+Dead-letter/failure state deve existir.
+
+---
+
+# 57. POLLING E REALTIME
+
+Preferir Realtime para mudança instantânea quando apropriado.
+
+Polling pode ser fallback para processos externos.
+
+Não fazer request a cada segundo indiscriminadamente.
+
+Estrutura de status deve funcionar tanto por:
+
+* atualização realtime;
+* refresh;
+* polling eventual.
+
+---
+
+# 58. AUDIT LOG
+
+Produto contábil precisa de rastreabilidade.
+
+Crie audit log append-only.
+
+Eventos relevantes:
+
+```text
+client.created
+client.updated
+
+task.created
+task.status_changed
+task.assigned
+
+document.uploaded
+
+import.created
+import.mapping_changed
+import.approved
+import.completed
+
+permission.changed
+```
+
+Registre:
+
+```text
+organization
+actor
+action
+entity_type
+entity_id
+timestamp
+metadata
+before/after quando apropriado
+request correlation id
+```
+
+Evite guardar PII duplicada sem necessidade.
+
+---
+
+# 59. PERFIL
+
+Página de perfil com:
+
+* nome;
+* email;
+* avatar;
+* telefone opcional;
+* cargo;
+* departamento;
+* preferências.
+
+Avatar via Supabase Storage.
+
+Mostrar fallback com iniciais.
+
+---
+
+# 60. PERSONALIZAÇÃO
+
+Usuário poderá selecionar:
+
+Tema:
+
+```text
+Operis Light
+Operis Dark
+System
+```
+
+Densidade:
+
+```text
+Comfortable
+Compact
+```
+
+Salvar no banco.
+
+Aplicar antes do paint sempre que possível para evitar flash.
+
+---
+
+# 61. FUTURA CUSTOMIZAÇÃO ENTERPRISE
+
+Arquitetar tokens para futuramente permitir:
+
+* logo do escritório;
+* cor institucional;
+* tema corporativo.
+
+Porém NÃO permitir CSS arbitrário inserido pelo cliente.
+
+Cores customizadas deverão passar por validação de contraste.
+
+---
+
+# 62. ESTADOS DE INTERFACE
+
+Toda tela assíncrona precisa possuir estados adequados:
+
+```text
+initial
+loading
+success
+empty
+error
+permission denied
+```
+
+Não exibir simplesmente spinner infinito.
+
+Skeleton somente quando fizer sentido.
+
+Erro deve permitir retry quando apropriado.
+
+---
+
+# 63. EMPTY STATES
+
+Empty state deve explicar:
+
+1. o que está vazio;
+2. por quê;
+3. o que fazer.
+
+Exemplo:
+
+```text
+Nenhuma tarefa nesta fila
+
+As tarefas atribuídas a você aparecerão aqui.
+
+[Criar tarefa]
+```
+
+Não colocar ilustrações gigantes desnecessárias.
+
+---
+
+# 64. FORMULÁRIOS
+
+React Hook Form + Zod.
+
+Validação no cliente melhora UX.
+
+Validação no servidor garante integridade.
+
+Não confie no client.
+
+Erros devem aparecer próximos do campo.
+
+Não apagar dados preenchidos após falha.
+
+---
+
+# 65. FEEDBACK DE AÇÕES
+
+Operações otimistas podem existir onde forem seguras.
+
+Ações irreversíveis ou sensíveis exigem confirmação.
+
+Não mostrar “Salvo!” para cada tecla.
+
+Autosave deve possuir estado discreto:
+
+```text
+Salvando...
+Salvo
+Erro ao salvar
+```
+
+---
+
+# 66. BUSCA
+
+Arquitetar busca global.
+
+Inicialmente permitir:
+
+* cliente;
+* tarefa.
+
+Depois poderá crescer para:
+
+* documento;
+* funcionário;
+* protocolo;
+* processo.
+
+Resultado categorizado.
+
+---
+
+# 67. TABELAS
+
+Accounting software vive em tabelas.
+
+Portanto DataTable é componente crítico.
+
+Suportar:
+
+* sorting;
+* filtering;
+* pagination;
+* selection;
+* column visibility;
+* sticky header;
+* density;
+* loading;
+* empty;
+* keyboard accessibility;
+* large dataset strategy.
+
+Valores monetários:
+
+alinhados à direita.
+
+Texto:
+
+alinhado à esquerda.
+
+Status:
+
+não deve depender apenas de cor.
+
+---
+
+# 68. PERFORMANCE
+
+Nunca buscar todas as linhas de uma tabela sem limite.
+
+Use paginação.
+
+Adicione índices conforme query patterns.
+
+Considere índices para:
+
+```text
+organization_id
+client_id
+status
+assignee_id
+due_date
+competence
+created_at
+```
+
+Avalie índices compostos conforme consultas reais.
+
+Não criar índice em tudo cegamente.
+
+---
+
+# 69. TANSTACK QUERY
+
+Utilize TanStack Query apenas onde server-state reativo no client justificar.
+
+Não envolva todo fetch automaticamente.
+
+Server Components podem buscar dados diretamente no servidor.
+
+TanStack Query é adequado para áreas como:
+
+* Kanban;
+* realtime;
+* import progress;
+* notificações;
+* operações altamente interativas.
+
+---
+
+# 70. ESTADO GLOBAL
+
+Não instalar Redux por padrão.
+
+Prioridade:
+
+1. URL para estado navegável;
+2. server state em backend/Query;
+3. local state;
+4. Context quando adequado.
+
+Se no futuro houver necessidade real de store global, analisar então.
+
+---
+
+# 71. SEGURANÇA
+
+Aplicar práticas seguras desde agora.
+
+Inclua:
+
+* RLS;
+* validação de input;
+* escaping;
+* proteção contra XSS;
+* proteção CSRF onde arquitetura exigir;
+* secure cookies;
+* segredo server-only;
+* princípio do menor privilégio;
+* validação de arquivos;
+* rate limiting nas rotas sensíveis;
+* logs sem secrets;
+* mensagens de erro que não revelem infraestrutura.
+
+Nunca logar:
+
+```text
+OPENAI_API_KEY
+service role
+JWT inteiro
+senha
+```
+
+---
+
+# 72. LGPD-BY-DESIGN
+
+Não implemente burocracia jurídica completa agora.
+
+Mas arquitetura deve facilitar:
+
+* minimização de dados;
+* acesso controlado;
+* trilha de auditoria;
+* retenção;
+* exclusão/anonymization quando aplicável;
+* segregação de tenants.
+
+Dados trabalhistas são sensíveis operacionalmente.
+
+Trate-os como tal.
+
+---
+
+# 73. TESTES
+
+Não entregar apenas código compilando.
+
+Implementar testes.
+
+Unit:
+
+Vitest.
+
+Prioridade:
+
+* domain helpers;
+* money;
+* competence;
+* validation;
+* permission logic;
+* import mapping;
+* parsing.
+
+Component:
+
+React Testing Library.
+
+E2E:
+
+Playwright.
+
+Testar pelo menos:
+
+```text
+login
+
+criar organização
+
+criar cliente
+
+criar tarefa
+
+mover tarefa
+
+upload
+
+iniciar importação
+
+mapear coluna
+
+aprovar importação
+
+trocar tema
+```
+
+---
+
+# 74. TESTE DE RLS
+
+Obrigatório.
+
+Criar testes provando:
+
+```text
+tenant A enxerga A
+
+tenant A NÃO enxerga B
+
+usuário sem permissão recebe deny
+
+service operations funcionam apenas no backend
+```
+
+A segurança multi-tenant deve ser testada, não presumida.
+
+---
+
+# 75. TESTES DE ACESSIBILIDADE
+
+Incluir axe no Playwright nas páginas principais.
+
+Também verificar manualmente na implementação:
+
+* labels;
+* landmarks;
+* headings;
+* focus order;
+* keyboard;
+* dialog;
+* menus;
+* tooltip;
+* drag alternatives.
+
+---
+
+# 76. CI
+
+Criar GitHub Actions.
+
+Pipeline mínimo:
+
+```text
+install
+lint
+typecheck
+unit tests
+build
+```
+
+Se ambiente permitir:
+
+E2E.
+
+Fail em qualquer etapa deve quebrar CI.
+
+---
+
+# 77. TYPESCRIPT
+
+Ativar strict.
+
+Não utilizar `any` por conveniência.
+
+Preferir:
+
+`unknown`
+
+e narrowing.
+
+Configurar quando razoável:
+
+```text
+strict
+noUncheckedIndexedAccess
+```
+
+Utilize tipos gerados do Supabase.
+
+Não manter manualmente tipos gigantes duplicados do banco.
+
+---
+
+# 78. ESLINT
+
+Configure regras úteis.
+
+Não silencie erros colocando:
+
+```text
+eslint-disable
+```
+
+sem justificativa.
+
+---
+
+# 79. ERROS
+
+Crie padrão de erro.
+
+Exemplos:
+
+```text
+ValidationError
+PermissionError
+NotFoundError
+ConflictError
+AIProviderError
+ImportError
+```
+
+Não exponha stack trace ao usuário.
+
+UI recebe mensagem apropriada.
+
+Logs recebem contexto técnico.
+
+---
+
+# 80. OBSERVABILIDADE
+
+Estruture logging com contexto:
+
+```text
+request_id
+user_id
+organization_id
+operation
+entity
+duration
+status
+```
+
+Não precisamos contratar plataforma externa imediatamente.
+
+Mas código deve estar preparado.
+
+---
+
+# 81. FEATURE FLAGS
+
+Crie abordagem simples para feature flags no banco/config.
+
+Útil futuramente para:
+
+* liberar IA;
+* novo módulo;
+* piloto;
+* beta privado.
+
+Não construir plataforma de feature flags completa agora.
+
+---
+
+# 82. ARQUITETURA DE FEATURES
+
+No frontend organize por domínio/feature.
+
+Evite pasta gigante:
+
+```text
+components/
+```
+
+com 300 arquivos aleatórios.
+
+Exemplo:
+
+```text
+features/
+  clients/
+  tasks/
+  documents/
+  imports/
+  notifications/
+  settings/
+```
+
+Componentes realmente genéricos pertencem à Operis UI.
+
+Componentes específicos permanecem dentro da feature.
+
+---
+
+# 83. SERVER LAYER
+
+Centralize operações importantes.
+
+Exemplo conceitual:
+
+```text
+server/
+  auth/
+  db/
+  clients/
+  tasks/
+  imports/
+  ai/
+```
+
+Não escreva SQL/business logic dentro de componente React.
+
+---
+
+# 84. DOMAIN LAYER
+
+Regras devem preferencialmente ser funções puras.
+
+Exemplo:
+
+```text
+calculateImportFingerprint()
+validateCompetence()
+compareSchemas()
+validateMapping()
+canTransitionTask()
+```
+
+Isto facilita testes.
+
+---
+
+# 85. ARQUITETURA DE WORKFLOW
+
+Workflows futuramente serão críticos.
+
+Crie conceito de:
+
+```text
+workflow
+workflow_version
+workflow_step
+workflow_run
+workflow_step_run
+```
+
+Nunca editar retroativamente uma versão em execução de forma destrutiva.
+
+Nova definição:
+
+nova versão.
+
+Isso permitirá futuramente workflows como:
+
+```text
+Folha Mensal
+Fiscal Mensal
+Fechamento Contábil
+Admissão
+Demissão
+Férias
+Abertura de empresa
+```
+
+---
+
+# 86. HUMAN-IN-THE-LOOP
+
+Algumas etapas precisam suportar:
+
+```text
+automatic
+manual
+approval
+conditional
+```
+
+Mesmo que nesta primeira implementação o motor não execute tudo.
+
+Projete schema pensando nisso.
+
+---
+
+# 87. APROVAÇÃO
+
+Criar conceito genérico:
+
+```text
+approval
+requested_by
+assigned_to
+status
+decision
+comment
+decided_at
+```
+
+Pode ser utilizado por:
+
+* importação;
+* folha;
+* fechamento;
+* documento;
+* ação sensível.
+
+---
+
+# 88. UI DE IA
+
+Não transforme cada tela em chatbot.
+
+IA deve aparecer contextualizada.
+
+Exemplo bom:
+
+```text
+Mapear colunas com IA
+Explicar divergência
+Resumir alterações
+```
+
+Também poderá existir futuramente:
+
+**Operis Intelligence**
+
+Mas o MVP deve priorizar IA contextual.
+
+Identifique visualmente sugestões de IA com o token violeta `ai`.
+
+---
+
+# 89. NÃO ESCONDER IA
+
+Quando conteúdo for gerado/sugerido por IA, sinalizar.
+
+Exemplo:
+
+```text
+Sugestão da Operis Intelligence
+```
+
+Usuário precisa entender que é sugestão.
+
+---
+
+# 90. NÃO ACOPLAR OPENAI AO DOMÍNIO
+
+Não deixe features importarem diretamente o SDK.
+
+Feature chama:
+
+```text
+aiService.suggestSpreadsheetMapping()
+```
+
+A camada de AI decide provider/model.
+
+Isso permitirá trocar modelo ou estratégia no futuro.
+
+---
+
+# 91. PROMPT VERSIONING
+
+Prompts de produção devem possuir ID e versão.
+
+Exemplo:
+
+```text
+spreadsheet_mapping:v1
+```
+
+Salvar versão em `ai_runs`.
+
+Quando alterar comportamento:
+
+incrementar versão.
+
+---
+
+# 92. FALLBACK SEM IA
+
+Operis deve continuar funcional se OpenAI estiver indisponível.
+
+No spreadsheet wizard:
+
+sem IA →
+
+usuário faz mapeamento manual.
+
+IA é acelerador, não single point of failure.
+
+---
+
+# 93. DOCUMENTAÇÃO
+
+Criar:
+
+```text
+README.md
+
+docs/architecture.md
+docs/database.md
+docs/security.md
+docs/design-system.md
+docs/ai.md
+docs/import-engine.md
+docs/testing.md
+```
+
+Criar ADRs:
+
+```text
+ADR-001-monorepo
+ADR-002-supabase
+ADR-003-multitenancy
+ADR-004-operis-ui
+ADR-005-ai-boundaries
+ADR-006-workflow-versioning
+```
+
+Cada ADR:
+
+```text
+Context
+Decision
+Alternatives
+Consequences
+```
+
+---
+
+# 94. GITHUB COPILOT INSTRUCTIONS
+
+Criar:
+
+`.github/copilot-instructions.md`
+
+Copiar para lá as regras arquiteturais realmente permanentes deste documento, de forma resumida.
+
+Principalmente:
+
+```text
+no fake data
+no business logic in UI
+RLS mandatory
+server-only secrets
+Operis UI
+semantic tokens
+AI suggestions are not source of financial truth
+money uses decimal
+multi-tenant first
+tests required
+```
+
+Assim próximos prompts não destruirão arquitetura.
+
+---
+
+# 95. AGENTS.MD
+
+Criar instruções para agentes de código.
+
+Incluir:
+
+* arquitetura;
+* comandos;
+* convenções;
+* segurança;
+* testes;
+* definição de done.
+
+---
+
+# 96. README
+
+README deve permitir que outro engenheiro clone e rode.
+
+Explique:
+
+pré-requisitos;
+
+Node;
+
+pnpm;
+
+Docker;
+
+Supabase CLI;
+
+variáveis;
+
+instalação;
+
+Supabase local;
+
+migrations;
+
+seed;
+
+web;
+
+testes;
+
+build.
+
+---
+
+# 97. SEED
+
+Crie seed real.
+
+Empresa demonstrativa:
+
+```text
+Operis Demo Accounting
+```
+
+Clientes fictícios.
+
+Tarefas fictícias.
+
+Solicitações fictícias.
+
+Nenhum dado deve ser apresentado como pessoa/empresa real.
+
+Seed serve apenas para desenvolvimento.
+
+---
+
+# 98. PRIMEIRA EXPERIÊNCIA
+
+Fluxo ideal:
+
+Usuário entra.
+
+Se não pertence a uma organização:
+
+onboarding.
+
+Perguntar:
+
+```text
+Nome do escritório
+Nome do usuário
+Departamentos utilizados
+```
+
+Criar organização.
+
+Depois dashboard.
+
+Não criar onboarding com quinze telas.
+
+---
+
+# 99. ROTAS INICIAIS
+
+Estrutura aproximada:
+
+```text
+/login
+/recuperar-senha
+
+/onboarding
+
+/app
+/app/fila
+/app/tarefas
+/app/clientes
+/app/clientes/[id]
+/app/documentos
+/app/importacoes
+/app/importacoes/[id]
+/app/notificacoes
+/app/configuracoes
+/app/configuracoes/perfil
+/app/configuracoes/equipe
+/app/configuracoes/aparencia
+/app/configuracoes/organizacao
+```
+
+Pode ajustar onde houver justificativa melhor.
+
+---
+
+# 100. UX PRINCIPLES
+
+Cada tela precisa otimizar:
+
+**Time to information**
+
+Quanto tempo até o usuário encontrar o que precisa?
+
+**Time to action**
+
+Quanto tempo até executar a tarefa?
+
+**Error prevention**
+
+Como evitamos erro antes de acontecer?
+
+**Error recovery**
+
+Como o usuário corrige?
+
+**Visibility of system status**
+
+Usuário sabe o que está acontecendo?
+
+**Recognition over recall**
+
+Não obrigue o contador a memorizar IDs ou códigos que podemos mostrar.
+
+---
+
+# 101. CONTEXTO VISÍVEL
+
+Em fluxos complexos sempre mostre contexto.
+
+Exemplo:
+
+```text
+Cliente
+Competência
+Departamento
+Responsável
+Status
+```
+
+Não deixe usuário processando planilha sem saber para qual cliente está importando.
+
+---
+
+# 102. AÇÕES DESTRUTIVAS
+
+Não utilizar modal de confirmação genérico para qualquer coisa.
+
+Mas para ação irreversível:
+
+mostrar claramente:
+
+* o que será afetado;
+* consequência;
+* CTA específico.
+
+Não usar apenas:
+
+```text
+Tem certeza?
+```
+
+Use:
+
+```text
+Arquivar cliente XPTO?
+```
+
+---
+
+# 103. FEEDBACK LOOP DO PRODUTO
+
+Criar estrutura simples futura para feedback.
+
+Não precisa implementar plataforma completa.
+
+Mas reserve conceito para:
+
+```text
+feedback
+category
+message
+context
+user
+organization
+created_at
+```
+
+No app poderá existir item discreto:
+
+`Enviar feedback`.
+
+---
+
+# 104. ERGONOMIA DE USUÁRIO POWER USER
+
+Contadores podem utilizar Operis durante horas.
+
+Portanto:
+
+* keyboard shortcuts;
+* command palette;
+* tabelas densas;
+* filtros rápidos;
+* poucos cliques;
+* ações em lote no futuro;
+* preservação de filtros;
+* contexto claro.
+
+Evite UX de aplicativo consumer.
+
+---
+
+# 105. LOCALIZAÇÃO
+
+Idioma inicial:
+
+`pt-BR`.
+
+Valores:
+
+```text
+R$ 1.234,56
+```
+
+Datas:
+
+```text
+10/09/2026
+```
+
+Competência:
+
+```text
+setembro/2026
+```
+
+Porém não espalhe formatação manual.
+
+Crie utilities.
+
+Utilize `Intl`.
+
+---
+
+# 106. ACESSIBILIDADE E ESTÉTICA
+
+O sistema precisa ser bonito.
+
+Mas não sacrificar eficiência.
+
+Pesquisas de HCI mostram relação entre percepção estética e percepção de usabilidade, embora os efeitos não sejam simples nem universais.
+
+Portanto nossa regra é:
+
+**estética melhora percepção; usabilidade precisa ser comprovada pela interação.**
+
+Não esconda ações para “deixar clean”.
+
+---
+
+# 107. QUALIDADE DE CÓDIGO
+
+Prioridades:
+
+```text
+Correctness
+Security
+Maintainability
+Accessibility
+Performance
+Visual quality
+Developer experience
+```
+
+Nesta ordem aproximadamente.
+
+Não sacrificar correctness por animação bonita.
+
+---
+
+# 108. NÃO OVERENGINEER
+
+Não implementar agora:
+
+* microservices;
+* Kubernetes;
+* Kafka;
+* event sourcing completo;
+* CQRS completo;
+* custom auth;
+* design-system package publicado em npm público;
+* banco separado por tenant;
+* GraphQL sem motivo;
+* Redis sem necessidade demonstrada.
+
+Postgres + Supabase + filas são suficientes nesta fase.
+
+---
+
+# 109. MAS PREPARE O CRESCIMENTO
+
+Evitar acoplamentos que impossibilitem depois:
+
+* workers dedicados;
+* serviços separados;
+* cache;
+* busca especializada;
+* warehouse;
+* BI;
+* integrações governamentais.
+
+Interfaces internas claras.
+
+---
+
+# 110. CRITÉRIOS DE ACEITE TÉCNICOS
+
+Antes de considerar concluído:
+
+```text
+pnpm install
+```
+
+funciona.
+
+```text
+pnpm lint
+```
+
+passa.
+
+```text
+pnpm typecheck
+```
+
+passa.
+
+```text
+pnpm test
+```
+
+passa.
+
+```text
+pnpm build
+```
+
+passa.
+
+Supabase migrations sobem do zero.
+
+Seed funciona.
+
+Login funciona.
+
+RLS funciona.
+
+CRUD principal funciona.
+
+Upload funciona.
+
+Kanban persiste.
+
+Tema persiste.
+
+Import wizard persiste.
+
+OpenAI funciona quando chave configurada.
+
+Sistema continua utilizável sem OpenAI.
+
+---
+
+# 111. CRITÉRIOS DE ACEITE VISUAIS
+
+Não considero concluído se apenas estiver funcional.
+
+Verificar:
+
+* consistência;
+* alinhamento;
+* spacing;
+* contraste;
+* estados;
+* loading;
+* empty;
+* responsive;
+* focus;
+* dark mode;
+* compact mode.
+
+Nenhuma página deve parecer feita por desenvolvedor sem design review.
+
+---
+
+# 112. CRITÉRIOS DE ACEITE DO KANBAN
+
+Deve ser possível:
+
+criar tarefa;
+
+abrir;
+
+editar;
+
+atribuir;
+
+mover;
+
+persistir;
+
+recarregar e continuar no novo status;
+
+usar via teclado;
+
+usar “Mover para...”;
+
+ver histórico da mudança.
+
+---
+
+# 113. CRITÉRIOS DE ACEITE DE IMPORTAÇÃO
+
+Teste com um XLSX real de fixture.
+
+Usuário precisa conseguir:
+
+upload;
+
+selecionar sheet;
+
+identificar header;
+
+ver colunas;
+
+mapear;
+
+pedir sugestão IA;
+
+editar sugestão;
+
+validar;
+
+ver erros;
+
+aprovar;
+
+processar;
+
+ver resultado;
+
+salvar template;
+
+reabrir importação.
+
+---
+
+# 114. FIXTURES
+
+Crie arquivos fictícios dentro de `/fixtures`.
+
+Exemplo:
+
+```text
+employees-valid.xlsx
+employees-invalid.xlsx
+employees-schema-changed.xlsx
+```
+
+Nunca usar informações reais.
+
+---
+
+# 115. SEGURANÇA DO UPLOAD
+
+Definir limites razoáveis.
+
+Sanitizar filename.
+
+Gerar storage path controlado pela aplicação.
+
+Não utilizar diretamente filename fornecido pelo usuário como path.
+
+Validar MIME e extensão.
+
+Quando futuramente forem suportados mais formatos, expandir whitelist.
+
+---
+
+# 116. ÍCONES
+
+Utilize Lucide.
+
+Ícones devem ter significado.
+
+Não decorar cada label com ícone.
+
+Mantenha tamanho consistente:
+
+16/18/20 principalmente.
+
+---
+
+# 117. LANGUAGE DA INTERFACE
+
+Texto deve ser profissional e humano.
+
+Evitar jargão técnico onde usuário contábil não precisa.
+
+Bom:
+
+```text
+Aguardando documentos do cliente
+```
+
+Ruim:
+
+```text
+Pending asynchronous resource ingestion
+```
+
+Erros devem orientar resolução.
+
+---
+
+# 118. NOTIFICAÇÕES
+
+Não bombardear usuário.
+
+Notification Center deve permitir:
+
+```text
+não lida
+lida
+tipo
+entidade
+created_at
+```
+
+Possibilidade de marcar como lida.
+
+Agrupar eventos repetitivos futuramente.
+
+---
+
+# 119. DEPENDÊNCIAS DE TAREFAS
+
+Task pode depender de outra.
+
+Exemplo:
+
+```text
+Fechar folha
+```
+
+depende de:
+
+```text
+Receber variáveis
+```
+
+Se bloqueada por dependency:
+
+mostrar.
+
+Isso será importante para workflows.
+
+---
+
+# 120. STATUS EXPLICÁVEL
+
+Nunca apenas spinner.
+
+Em processamento assíncrono mostrar:
+
+```text
+Na fila
+Processando
+Validando
+Aguardando aprovação
+Concluído
+Falhou
+```
+
+Se falhou:
+
+mostrar erro compreensível e ação.
+
+---
+
+# 121. CORRELATION ID
+
+Operações importantes devem ter correlation/request ID.
+
+Especialmente:
+
+* import;
+* AI;
+* worker;
+* integrations.
+
+Facilita suporte.
+
+---
+
+# 122. OUTBOX
+
+Para eventos críticos, criar estrutura simples de outbox no banco.
+
+Não precisamos construir event-driven architecture inteira.
+
+Mas mudanças importantes que gerem async work podem escrever `outbox_events` na mesma transação.
+
+Consumer processa posteriormente.
+
+Isso reduz risco de:
+
+banco atualizou mas job nunca foi publicado.
+
+---
+
+# 123. FUTURA INTEGRAÇÃO GOVERNAMENTAL
+
+Não implementar eSocial/EFD-Reinf nesta etapa.
+
+Mas arquitetar integrations com:
+
+```text
+integration_connection
+integration_job
+external_protocol
+external_status
+attempt
+receipt
+error
+```
+
+Estados assíncronos serão padrão.
+
+---
+
+# 124. PRIMEIRO MÓDULO: DEPARTAMENTO PESSOAL
+
+Criar uma entrada visual para DP.
+
+Nesta fase poderá mostrar:
+
+```text
+Competências
+Processos
+Pendências
+Importações
+```
+
+NÃO implementar cálculos de folha falsos.
+
+Se motor de cálculo não existe, não mostrar valor inventado.
+
+---
+
+# 125. DEMONSTRAÇÃO REAL
+
+Ao concluir quero conseguir demonstrar:
+
+“Este é um escritório.”
+
+“Estes são seus clientes.”
+
+“Cada colaborador possui acesso controlado.”
+
+“Esta é a operação deste mês.”
+
+“Estas tarefas estão atrasadas.”
+
+“Este cliente não enviou documentos.”
+
+“Este arquivo chegou.”
+
+“Vou subir a planilha.”
+
+“Operis identificou a estrutura.”
+
+“A IA sugeriu os mapeamentos.”
+
+“Vou corrigir esta coluna.”
+
+“Agora validamos.”
+
+“Encontramos três inconsistências.”
+
+“Vou corrigir.”
+
+“Vou aprovar.”
+
+“Processamos.”
+
+“Tudo ficou registrado.”
+
+Essa sequência precisa realmente funcionar.
+
+---
+
+# 126. ORDEM DE IMPLEMENTAÇÃO
+
+Execute aproximadamente nesta ordem:
+
+FASE 0
+
+Inicialização do monorepo e tooling.
+
+FASE 1
+
+Operis UI + tokens + typography + themes.
+
+FASE 2
+
+Supabase local + migrations + types.
+
+FASE 3
+
+Auth + organizations + RLS.
+
+FASE 4
+
+App shell.
+
+FASE 5
+
+Profiles + members + RBAC.
+
+FASE 6
+
+Clients.
+
+FASE 7
+
+Tasks + Kanban + comments + audit.
+
+FASE 8
+
+Documents + Storage.
+
+FASE 9
+
+Notifications.
+
+FASE 10
+
+Spreadsheet import engine.
+
+FASE 11
+
+OpenAI mapping suggestions.
+
+FASE 12
+
+Dashboard real.
+
+FASE 13
+
+Tests.
+
+FASE 14
+
+Docs + CI + final review.
+
+Não faça tudo simultaneamente em arquivos aleatórios.
+
+---
+
+# 127. EM CADA FASE
+
+Sempre:
+
+1. implementar;
+2. rodar typecheck;
+3. rodar testes relevantes;
+4. corrigir;
+5. continuar.
+
+Não deixar 50 erros para o final.
+
+---
+
+# 128. SE ALGO NÃO ESTIVER CONFIGURADO
+
+Se Supabase cloud não estiver conectado:
+
+configure Supabase local.
+
+Se OPENAI_API_KEY estiver ausente:
+
+implemente integração completa, mas mostre no ambiente dev mensagem adequada:
+
+```text
+OpenAI não configurada.
+O mapeamento manual continua disponível.
+```
+
+Não hardcode chave.
+
+Não peça para colocar chave no código.
+
+---
+
+# 129. NÃO ME FAÇA 40 PERGUNTAS
+
+Faça decisões técnicas razoáveis baseado nesta especificação.
+
+Somente interrompa se houver bloqueio impossível de resolver sem credencial externa.
+
+Credenciais devem sempre entrar por environment variables.
+
+---
+
+# 130. VOCÊ TEM AUTORIZAÇÃO PARA
+
+Criar arquivos.
+
+Instalar dependências.
+
+Executar comandos.
+
+Configurar lint.
+
+Configurar testes.
+
+Criar migrations.
+
+Alterar código que acabou de criar.
+
+Executar build.
+
+Corrigir warnings relevantes.
+
+Criar documentação.
+
+---
+
+# 131. VOCÊ NÃO TEM AUTORIZAÇÃO PARA
+
+Inserir segredo inventado.
+
+Remover segurança para fazer demo funcionar.
+
+Usar `any` em massa.
+
+Desabilitar testes.
+
+Criar endpoint público inseguro.
+
+Expor service role.
+
+Expor OpenAI key.
+
+Desabilitar RLS.
+
+Fingir integração.
+
+---
+
+# 132. DOCUMENTE DECISÕES
+
+Se durante a execução precisar escolher entre duas abordagens arquiteturais importantes:
+
+decida;
+
+registre ADR;
+
+continue.
+
+Não pare o desenvolvimento apenas para pedir preferência estética pequena.
+
+---
+
+# 133. DESIGN REVIEW FINAL
+
+Antes de finalizar, abra todas as principais telas e revise como Staff Product Designer.
+
+Procure:
+
+* inconsistência de spacing;
+* labels confusas;
+* hierarquia ruim;
+* tabela apertada demais;
+* tabela espaçada demais;
+* contraste;
+* ações escondidas;
+* excesso de cards;
+* responsive;
+* dark mode;
+* foco;
+* empty states;
+* loading;
+* error states.
+
+Corrija.
+
+---
+
+# 134. ENGINEERING REVIEW FINAL
+
+Depois faça revisão técnica.
+
+Procure:
+
+* duplicated logic;
+* N+1;
+* unbounded query;
+* missing index;
+* missing RLS;
+* missing permission;
+* secret exposure;
+* client component desnecessário;
+* useEffect desnecessário;
+* incorrect money type;
+* swallowed error;
+* race condition;
+* import não idempotente;
+* AI sem validation schema;
+* worker sem retry policy;
+* arquivo sem teste crítico.
+
+Corrija.
+
+---
+
+# 135. SECURITY REVIEW FINAL
+
+Tente quebrar isolamento multi-tenant.
+
+Usuário A tentando IDs da B deve falhar.
+
+Verifique Storage.
+
+Verifique API.
+
+Verifique mutations.
+
+Verifique server actions.
+
+Verifique OpenAI.
+
+Verifique logs.
+
+---
+
+# 136. RESULTADO FINAL QUE ESPERO DE VOCÊ
+
+Quando terminar esta execução, não me envie uma explicação gigantesca.
+
+Me entregue um relatório objetivo contendo:
+
+```text
+1. O que foi criado
+
+2. Arquitetura final
+
+3. Rotas disponíveis
+
+4. Banco/migrations
+
+5. Funcionalidades implementadas
+
+6. Testes executados e resultado
+
+7. Comandos para executar localmente
+
+8. Variáveis que preciso preencher
+
+9. Limitações reais ainda existentes
+
+10. Próximas cinco prioridades
+```
+
+Também inclua:
+
+```text
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+```
+
+e o resultado de cada um.
+
+Não declare que algo funciona sem ter testado quando for possível testar.
+
+---
+
+# 137. FONTES E PRINCÍPIOS QUE FUNDAMENTAM ESTAS DECISÕES
+
+Considere durante implementação:
+
+**W3C — WCAG 2.2**
+
+Referência normativa para contraste, foco, navegação por teclado, dragging, targets e acessibilidade.
+
+**Radix UI — Accessibility**
+
+Primitives alinhados com padrões WAI-ARIA, keyboard navigation e focus management.
+
+**Supabase — Row Level Security**
+
+RLS deve proteger toda tabela exposta e ser testada. `service_role` bypassa RLS e deve permanecer server-side.
+
+**Supabase — Edge Functions**
+
+Adequadas para endpoints e orquestração; operações longas/pesadas devem ir para workers/background execution.
+
+**OpenAI — Responses API**
+
+Interface moderna para integração com modelos.
+
+**OpenAI — Structured Outputs**
+
+Utilizar JSON Schema para saídas estruturadas em vez de parsing frágil de texto.
+
+**Geist Design System — Typography**
+
+Tabular numerals são indicados para apresentação consistente de números.
+
+**Bigelow, 2019 — Typeface Features and Legibility Research**
+
+Tipografia digital e características das fontes afetam legibilidade; decisões não devem se apoiar apenas em serif/sans-serif como regra universal.
+
+**Sheedy et al. — Text Legibility and the Letter Superiority Effect**
+
+Fonte, tamanho, largura dos traços e parâmetros de display afetam legibilidade.
+
+**Dobres, Chahine & Reimer — Effects of ambient illumination, contrast polarity, and letter size on text legibility**
+
+Evidências de vantagem de polaridade positiva em determinadas condições sustentam um tema claro como default de aplicação altamente informacional, mantendo dark mode como opção.
+
+**Humar et al. — The impact of color combinations on the legibility of text presented on LCDs**
+
+Combinação de cores e contraste afetam legibilidade.
+
+**Tractinsky et al. — What is beautiful is usable**
+
+Estética pode afetar percepção de sistemas.
+
+**Tuch et al. — Is beautiful really usable?**
+
+A relação entre estética e usabilidade é mais complexa do que uma regra simples; boa usabilidade deve ser realmente implementada e validada.
+
+---
+
+# 138. ÚLTIMA REGRA
+
+Não construa “um dashboard bonito”.
+
+Construa o início de uma empresa de software.
+
+O código que você escrever agora será considerado a primeira versão da base tecnológica da Operis.
+
+Pense como se outros 30 engenheiros fossem trabalhar neste repositório futuramente.
+
+Pense como se uma grande empresa de contabilidade fosse realizar due diligence técnica nesse código.
+
+Pense como se dados reais de centenas de empresas fossem trafegar nele.
+
+Pense como produto enterprise.
+
+Agora:
+
+**analise a pasta atual, confirme que está vazia, inicialize o projeto e execute a implementação completa desta primeira fundação da Operis. Não pare após criar o scaffold. Continue até que os critérios de aceite possíveis no ambiente atual estejam satisfeitos.**

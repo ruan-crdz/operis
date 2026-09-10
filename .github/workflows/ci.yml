@@ -1,0 +1,46 @@
+name: Operis CI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e e2e/public.spec.ts
+  supabase-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm db:start
+      - run: pnpm db:reset
+      - run: pnpm db:test
+      - run: pnpm db:seed
+      - run: node scripts/configure-local.mjs
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e e2e/operational.spec.ts
+        env:
+          E2E_EMAIL: demo@operis.test
+          E2E_PASSWORD: OperisDemo!2026
+      - if: always()
+        run: pnpm exec supabase stop

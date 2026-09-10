@@ -1,0 +1,6 @@
+pnpm-lock.yaml
+prompt.txt
+.next
+node_modules
+.local
+packages/types/src/database.ts
