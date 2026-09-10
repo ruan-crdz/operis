@@ -15,6 +15,7 @@ import {
   reopenLedgerPeriod,
 } from '@/client/actions/ledger';
 import { LedgerEntryForm } from './entry-form';
+import { LedgerBankSection } from './bank';
 import type { EdgeContext } from '@/server/edge/context';
 type Db = EdgeContext['db'];
 const statusLabel: Record<string, string> = { draft: 'Rascunho', posted: 'Postado', reversed: 'Estornado' };
@@ -52,6 +53,7 @@ export async function LedgerPanel({
   permissions,
   competence: requestedCompetence,
   account: requestedAccount,
+  bank: requestedBank,
 }: {
   db: Db;
   orgId: string;
@@ -59,6 +61,7 @@ export async function LedgerPanel({
   permissions: Set<string>;
   competence?: string;
   account?: string;
+  bank?: string;
 }) {
   if (!permissions.has('ledger.read'))
     return (
@@ -113,6 +116,7 @@ export async function LedgerPanel({
   check(accounts.error);
   const postableAccounts = (accounts.data ?? []).filter((a) => a.is_postable);
   const syntheticAccounts = (accounts.data ?? []).filter((a) => !a.is_postable);
+  const assetPostableAccounts = postableAccounts.filter((a) => a.account_type === 'asset');
   const { from, to } = monthRange(competence);
   const entries = period
     ? await db
@@ -483,6 +487,15 @@ export async function LedgerPanel({
           </Panel>
         </>
       )}
+      {await LedgerBankSection({
+        db,
+        orgId,
+        bookId,
+        accounts: postableAccounts,
+        assetAccounts: assetPostableAccounts,
+        permissions,
+        selectedBank: requestedBank,
+      })}
     </div>
   );
 }

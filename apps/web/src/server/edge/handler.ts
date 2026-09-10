@@ -4,9 +4,11 @@ import { competenceSchema } from '@operis/domain';
 import { z } from 'zod';
 import { readUpload } from '../files';
 import { parseSpreadsheet } from '../imports/parser';
+import { parseBankStatement } from '../ledger/bank-parser';
 import { suggestSpreadsheetMapping, askAssistant, type ChatMessage } from '../ai/gateway';
 import { check, permit, type EdgeContext } from './context';
-import { createHmac } from 'node:crypto';
+import { createHmac, createHash } from 'node:crypto';
+import { Buffer } from 'node:buffer';
 const MAX_BODY = 12 * 1024 * 1024;
 const value = (form: FormData, key: string) => z.string().parse(form.get(key));
 const uuid = (form: FormData, key: string) => z.uuid().parse(value(form, key));
@@ -193,6 +195,24 @@ export function createHandler(env: (name: string) => string | undefined) {
           .max(20)
           .parse(JSON.parse(value(form, 'history') || '[]')) as ChatMessage[];
         return Response.json(await askAssistant(ctx, message, history), { headers });
+      }
+      if (operation === 'import-bank-statement') {
+        await permit(ctx, 'ledger.entries.create');
+        const file = form.get('file');
+        if (!(file instanceof File)) throw new Error('Selecione um arquivo de extrato.');
+        if (file.size > 5 * 1024 * 1024) throw new Error('Extrato acima do limite permitido.');
+        const bytes = Buffer.from(await file.arrayBuffer());
+        const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
+        const transactions = parseBankStatement(bytes, extension);
+        const checksum = createHash('sha256').update(bytes).digest('hex');
+        const result = await db.rpc('import_bank_statement', {
+          bank_account: uuid(form, 'bank_account_id'),
+          filename: file.name.replace(/[\x00-\x1f/\\]/g, '_').slice(0, 180),
+          file_checksum: checksum,
+          transactions,
+        });
+        check(result.error);
+        return Response.json({ id: result.data, rows: transactions.length }, { headers });
       }
       return Response.json({ message: 'Operação desconhecida.' }, { status: 400, headers });
     } catch (error) {

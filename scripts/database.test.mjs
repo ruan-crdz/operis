@@ -566,3 +566,121 @@ test('four-eyes approval and completion gates close a fully evidenced competence
   assert.equal(await scalar("select count(*)::integer from public.process_evidence where process_id=$1 and evidence_type='approval'", [process]), 1);
   await asUser(a);
 });
+let ledgerBook, ledgerPeriod, cashAccount, expenseAccount;
+test('ledger: book, period and chart of accounts are created for a client', async () => {
+  ledgerBook = await scalar('select public.ensure_ledger_book($1,$2)', [orgA, clientA]);
+  ledgerPeriod = await scalar("select public.open_ledger_period($1,'2026-09')", [ledgerBook]);
+  cashAccount = await scalar(
+    "select public.create_ledger_account($1,'1.1.01','Caixa','asset','debit',true,null)",
+    [ledgerBook],
+  );
+  expenseAccount = await scalar(
+    "select public.create_ledger_account($1,'4.1.01','Despesas com aluguel','expense','debit',true,null)",
+    [ledgerBook],
+  );
+  assert.ok(ledgerBook && ledgerPeriod && cashAccount && expenseAccount);
+});
+test('ledger: unbalanced entry cannot be posted; balanced entry posts, is immutable and reverses', async () => {
+  const draft = await scalar(
+    "select public.create_ledger_entry($1,$2,'2026-09-05','Pagamento com diferença','',$3,$4)",
+    [
+      ledgerBook,
+      ledgerPeriod,
+      randomUUID(),
+      JSON.stringify([
+        { account_id: expenseAccount, side: 'debit', amount: '5000.00' },
+        { account_id: cashAccount, side: 'credit', amount: '4999.99' },
+      ]),
+    ],
+  );
+  await assert.rejects(db.query('select public.post_ledger_entry($1,1)', [draft]), /desbalanceado/);
+  await db.query('select public.discard_ledger_entry($1,1)', [draft]);
+  const entry = await scalar(
+    "select public.create_ledger_entry($1,$2,'2026-09-05','Pagamento de aluguel','',$3,$4)",
+    [
+      ledgerBook,
+      ledgerPeriod,
+      randomUUID(),
+      JSON.stringify([
+        { account_id: expenseAccount, side: 'debit', amount: '5000.00' },
+        { account_id: cashAccount, side: 'credit', amount: '5000.00' },
+      ]),
+    ],
+  );
+  assert.equal(await scalar('select public.post_ledger_entry($1,1)', [entry]), 1);
+  await assert.rejects(
+    db.query("update public.ledger_journal_entries set description='hacked' where id=$1", [entry]),
+    /permission denied/,
+  );
+  const reversal = await scalar(
+    "select public.reverse_ledger_entry($1,$2,'2026-09-06','Pagamento duplicado por engano',$3)",
+    [entry, ledgerPeriod, randomUUID()],
+  );
+  assert.equal(await scalar('select status from public.ledger_journal_entries where id=$1', [entry]), 'reversed');
+  assert.equal(await scalar('select status from public.ledger_journal_entries where id=$1', [reversal]), 'posted');
+});
+test('ledger: period closes only when balanced with no drafts, and can be reopened with a reason', async () => {
+  await db.query('select public.close_ledger_period($1,1)', [ledgerPeriod]);
+  assert.equal(await scalar('select status from public.ledger_periods where id=$1', [ledgerPeriod]), 'closed');
+  await assert.rejects(
+    db.query(
+      "select public.create_ledger_entry($1,$2,'2026-09-07','Deveria falhar','',$3,$4)",
+      [ledgerBook, ledgerPeriod, randomUUID(), JSON.stringify([{ account_id: cashAccount, side: 'debit', amount: '1' }, { account_id: expenseAccount, side: 'credit', amount: '1' }])],
+    ),
+    /período contábil não está aberto/,
+  );
+  await db.query("select public.reopen_ledger_period($1,'Ajuste solicitado pelo cliente')", [ledgerPeriod]);
+  assert.equal(await scalar('select status from public.ledger_periods where id=$1', [ledgerPeriod]), 'open');
+});
+test('ledger tenant isolation: org B cannot read or post org A ledger entries', async () => {
+  await asUser(b);
+  assert.equal(
+    await scalar('select count(*)::integer from public.ledger_journal_entries where book_id=$1', [ledgerBook]),
+    0,
+  );
+  await assert.rejects(db.query('select public.post_ledger_entry($1,1)', [randomUUID()]), /Permission denied/);
+  await asUser(a);
+});
+test('ledger: bank statement import dedupes by fitid and reconciliation creates a balanced draft entry', async () => {
+  const bankAccount = await scalar(
+    "select public.create_ledger_bank_account($1,$2,'Banco Central do Escritório','Conta 1234-5')",
+    [ledgerBook, cashAccount],
+  );
+  const rows = JSON.stringify([
+    { date: '2026-09-10', amount: '-500.00', description: 'PIX ALUGUEL SETEMBRO', fitid: 'TX-1' },
+    { date: '2026-09-11', amount: '1200.00', description: 'RECEBIMENTO CLIENTE', fitid: 'TX-2' },
+  ]);
+  const batch1 = await scalar(
+    "select public.import_bank_statement($1,'extrato.ofx','checksum-1',$2)",
+    [bankAccount, rows],
+  );
+  const batch2 = await scalar(
+    "select public.import_bank_statement($1,'extrato.ofx','checksum-1',$2)",
+    [bankAccount, rows],
+  );
+  assert.equal(batch2, batch1);
+  assert.equal(
+    await scalar('select count(*)::integer from public.ledger_bank_transactions where bank_account_id=$1', [bankAccount]),
+    2,
+  );
+  const outflow = await scalar("select id from public.ledger_bank_transactions where fitid='TX-1'");
+  const entryId = await scalar(
+    "select public.create_entry_from_bank_transaction($1,$2,'Aluguel pago via PIX')",
+    [outflow, expenseAccount],
+  );
+  assert.equal(await scalar('select status from public.ledger_bank_transactions where id=$1', [outflow]), 'matched');
+  assert.equal(await scalar('select status from public.ledger_journal_entries where id=$1', [entryId]), 'draft');
+  const debit = await scalar(
+    "select sum(amount) from public.ledger_journal_lines where entry_id=$1 and side='debit'",
+    [entryId],
+  );
+  const credit = await scalar(
+    "select sum(amount) from public.ledger_journal_lines where entry_id=$1 and side='credit'",
+    [entryId],
+  );
+  assert.equal(debit, credit);
+  await assert.rejects(
+    db.query('select public.create_entry_from_bank_transaction($1,$2,$3)', [outflow, expenseAccount, 'Duplicado']),
+    /já foi conciliado/,
+  );
+});

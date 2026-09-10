@@ -847,6 +847,102 @@ Update: {
 };
 Relationships: [{foreignKeyName:"ledger_accounts_created_by_fkey";columns:["created_by"];isOneToOne:false;referencedRelation:"profiles";referencedColumns:["id"]},{foreignKeyName:"ledger_accounts_organization_id_client_id_book_id_fkey";columns:["organization_id","client_id","book_id"];isOneToOne:false;referencedRelation:"ledger_books";referencedColumns:["organization_id","client_id","id"]},{foreignKeyName:"ledger_accounts_organization_id_client_id_book_id_parent_i_fkey";columns:["organization_id","client_id","book_id","parent_id"];isOneToOne:false;referencedRelation:"ledger_accounts";referencedColumns:["organization_id","client_id","book_id","id"]},{foreignKeyName:"ledger_accounts_organization_id_fkey";columns:["organization_id"];isOneToOne:false;referencedRelation:"organizations";referencedColumns:["id"]}];
 };
+"ledger_bank_accounts": {
+Row: {
+"id": string;
+"organization_id": string;
+"client_id": string;
+"book_id": string;
+"ledger_account_id": string;
+"bank_name": string;
+"account_label": string;
+"active": boolean;
+"created_by": string;
+"created_at": string;
+"updated_at": string;
+};
+Insert: {
+"id"?: string;
+"organization_id": string;
+"client_id": string;
+"book_id": string;
+"ledger_account_id": string;
+"bank_name": string;
+"account_label"?: string;
+"active"?: boolean;
+"created_by"?: string;
+"created_at"?: string;
+"updated_at"?: string;
+};
+Update: {
+"id"?: string;
+"organization_id"?: string;
+"client_id"?: string;
+"book_id"?: string;
+"ledger_account_id"?: string;
+"bank_name"?: string;
+"account_label"?: string;
+"active"?: boolean;
+"created_by"?: string;
+"created_at"?: string;
+"updated_at"?: string;
+};
+Relationships: [{foreignKeyName:"ledger_bank_accounts_created_by_fkey";columns:["created_by"];isOneToOne:false;referencedRelation:"profiles";referencedColumns:["id"]},{foreignKeyName:"ledger_bank_accounts_organization_id_client_id_book_id_fkey";columns:["organization_id","client_id","book_id"];isOneToOne:false;referencedRelation:"ledger_books";referencedColumns:["organization_id","client_id","id"]},{foreignKeyName:"ledger_bank_accounts_organization_id_client_id_book_id_led_fkey";columns:["organization_id","client_id","book_id","ledger_account_id"];isOneToOne:false;referencedRelation:"ledger_accounts";referencedColumns:["organization_id","client_id","book_id","id"]},{foreignKeyName:"ledger_bank_accounts_organization_id_fkey";columns:["organization_id"];isOneToOne:false;referencedRelation:"organizations";referencedColumns:["id"]}];
+};
+"ledger_bank_transactions": {
+Row: {
+"id": string;
+"organization_id": string;
+"client_id": string;
+"book_id": string;
+"bank_account_id": string;
+"batch_id": string;
+"posted_date": string;
+"amount": number;
+"description": string;
+"fitid": string | null;
+"status": string;
+"matched_entry_id": string | null;
+"matched_by": string | null;
+"matched_at": string | null;
+"created_at": string;
+};
+Insert: {
+"id"?: string;
+"organization_id": string;
+"client_id": string;
+"book_id": string;
+"bank_account_id": string;
+"batch_id": string;
+"posted_date": string;
+"amount": number;
+"description"?: string;
+"fitid"?: string | null;
+"status"?: string;
+"matched_entry_id"?: string | null;
+"matched_by"?: string | null;
+"matched_at"?: string | null;
+"created_at"?: string;
+};
+Update: {
+"id"?: string;
+"organization_id"?: string;
+"client_id"?: string;
+"book_id"?: string;
+"bank_account_id"?: string;
+"batch_id"?: string;
+"posted_date"?: string;
+"amount"?: number;
+"description"?: string;
+"fitid"?: string | null;
+"status"?: string;
+"matched_entry_id"?: string | null;
+"matched_by"?: string | null;
+"matched_at"?: string | null;
+"created_at"?: string;
+};
+Relationships: [{foreignKeyName:"ledger_bank_transactions_matched_by_fkey";columns:["matched_by"];isOneToOne:false;referencedRelation:"profiles";referencedColumns:["id"]},{foreignKeyName:"ledger_bank_transactions_organization_id_batch_id_fkey";columns:["organization_id","batch_id"];isOneToOne:false;referencedRelation:"ledger_import_batches";referencedColumns:["organization_id","id"]},{foreignKeyName:"ledger_bank_transactions_organization_id_client_id_book_i_fkey1";columns:["organization_id","client_id","book_id","bank_account_id"];isOneToOne:false;referencedRelation:"ledger_bank_accounts";referencedColumns:["organization_id","client_id","book_id","id"]},{foreignKeyName:"ledger_bank_transactions_organization_id_client_id_book_i_fkey2";columns:["organization_id","client_id","book_id","matched_entry_id"];isOneToOne:false;referencedRelation:"ledger_journal_entries";referencedColumns:["organization_id","client_id","book_id","id"]},{foreignKeyName:"ledger_bank_transactions_organization_id_client_id_book_id_fkey";columns:["organization_id","client_id","book_id"];isOneToOne:false;referencedRelation:"ledger_books";referencedColumns:["organization_id","client_id","id"]},{foreignKeyName:"ledger_bank_transactions_organization_id_fkey";columns:["organization_id"];isOneToOne:false;referencedRelation:"organizations";referencedColumns:["id"]}];
+};
 "ledger_books": {
 Row: {
 "id": string;
@@ -885,6 +981,87 @@ Update: {
 "updated_at"?: string;
 };
 Relationships: [{foreignKeyName:"ledger_books_created_by_fkey";columns:["created_by"];isOneToOne:false;referencedRelation:"profiles";referencedColumns:["id"]},{foreignKeyName:"ledger_books_organization_id_client_id_fkey";columns:["organization_id","client_id"];isOneToOne:false;referencedRelation:"clients";referencedColumns:["organization_id","id"]},{foreignKeyName:"ledger_books_organization_id_fkey";columns:["organization_id"];isOneToOne:false;referencedRelation:"organizations";referencedColumns:["id"]}];
+};
+"ledger_classification_rules": {
+Row: {
+"id": string;
+"organization_id": string;
+"client_id": string;
+"book_id": string;
+"match_value": string;
+"counterpart_account_id": string;
+"priority": number;
+"active": boolean;
+"created_by": string;
+"created_at": string;
+"updated_at": string;
+};
+Insert: {
+"id"?: string;
+"organization_id": string;
+"client_id": string;
+"book_id": string;
+"match_value": string;
+"counterpart_account_id": string;
+"priority"?: number;
+"active"?: boolean;
+"created_by"?: string;
+"created_at"?: string;
+"updated_at"?: string;
+};
+Update: {
+"id"?: string;
+"organization_id"?: string;
+"client_id"?: string;
+"book_id"?: string;
+"match_value"?: string;
+"counterpart_account_id"?: string;
+"priority"?: number;
+"active"?: boolean;
+"created_by"?: string;
+"created_at"?: string;
+"updated_at"?: string;
+};
+Relationships: [{foreignKeyName:"ledger_classification_rules_created_by_fkey";columns:["created_by"];isOneToOne:false;referencedRelation:"profiles";referencedColumns:["id"]},{foreignKeyName:"ledger_classification_rules_organization_id_client_id_boo_fkey1";columns:["organization_id","client_id","book_id","counterpart_account_id"];isOneToOne:false;referencedRelation:"ledger_accounts";referencedColumns:["organization_id","client_id","book_id","id"]},{foreignKeyName:"ledger_classification_rules_organization_id_client_id_book_fkey";columns:["organization_id","client_id","book_id"];isOneToOne:false;referencedRelation:"ledger_books";referencedColumns:["organization_id","client_id","id"]},{foreignKeyName:"ledger_classification_rules_organization_id_fkey";columns:["organization_id"];isOneToOne:false;referencedRelation:"organizations";referencedColumns:["id"]}];
+};
+"ledger_import_batches": {
+Row: {
+"id": string;
+"organization_id": string;
+"client_id": string;
+"book_id": string;
+"bank_account_id": string;
+"original_filename": string;
+"checksum": string;
+"row_count": number;
+"created_by": string;
+"created_at": string;
+};
+Insert: {
+"id"?: string;
+"organization_id": string;
+"client_id": string;
+"book_id": string;
+"bank_account_id": string;
+"original_filename": string;
+"checksum": string;
+"row_count"?: number;
+"created_by"?: string;
+"created_at"?: string;
+};
+Update: {
+"id"?: string;
+"organization_id"?: string;
+"client_id"?: string;
+"book_id"?: string;
+"bank_account_id"?: string;
+"original_filename"?: string;
+"checksum"?: string;
+"row_count"?: number;
+"created_by"?: string;
+"created_at"?: string;
+};
+Relationships: [{foreignKeyName:"ledger_import_batches_created_by_fkey";columns:["created_by"];isOneToOne:false;referencedRelation:"profiles";referencedColumns:["id"]},{foreignKeyName:"ledger_import_batches_organization_id_client_id_book_id_ba_fkey";columns:["organization_id","client_id","book_id","bank_account_id"];isOneToOne:false;referencedRelation:"ledger_bank_accounts";referencedColumns:["organization_id","client_id","book_id","id"]},{foreignKeyName:"ledger_import_batches_organization_id_client_id_book_id_fkey";columns:["organization_id","client_id","book_id"];isOneToOne:false;referencedRelation:"ledger_books";referencedColumns:["organization_id","client_id","id"]},{foreignKeyName:"ledger_import_batches_organization_id_fkey";columns:["organization_id"];isOneToOne:false;referencedRelation:"organizations";referencedColumns:["id"]}];
 };
 "ledger_journal_entries": {
 Row: {
@@ -1814,8 +1991,11 @@ Relationships: [{foreignKeyName:"workflows_created_by_fkey";columns:["created_by
 "consume_rate_limit": { Args: {"org_id":string;"feature_name":string}; Returns: boolean };
 "create_document_request": { Args: {"org_id":string;"target_client":string;"title":string;"competence":string;"labels":string[];"due"?:string}; Returns: string };
 "create_dp_occurrence": { Args: {"process":string;"occurrence_type":string;"employee":string;"effective":string;"occurrence_source":string;"occurrence_notes":string;"idempotency":string;"document"?:string;"source_import"?:string}; Returns: string };
+"create_entry_from_bank_transaction": { Args: {"transaction_id":string;"counterpart":string;"entry_description":string}; Returns: string };
 "create_import": { Args: {"org_id":string;"target_client":string;"target_competence":string;"filename":string;"path":string;"file_checksum":string;"workbook":Json}; Returns: string };
 "create_ledger_account": { Args: {"book":string;"account_code":string;"account_name":string;"account_kind":string;"account_normal_balance":string;"postable"?:boolean;"parent"?:string}; Returns: string };
+"create_ledger_bank_account": { Args: {"book":string;"for_account":string;"bank":string;"label"?:string}; Returns: string };
+"create_ledger_classification_rule": { Args: {"book":string;"value":string;"counterpart":string;"rule_priority"?:number}; Returns: string };
 "create_ledger_entry": { Args: {"book":string;"period":string;"entry_date":string;"entry_description":string;"entry_reference":string;"idempotency":string;"entry_lines":Json;"source_document"?:string;"entry_source"?:string}; Returns: string };
 "create_organization": { Args: {"org_name":string;"person_name":string;"department_names":string[]}; Returns: string };
 "create_verified_import": { Args: {"payload":string;"signature":string}; Returns: string };
@@ -1825,6 +2005,8 @@ Relationships: [{foreignKeyName:"workflows_created_by_fkey";columns:["created_by
 "ensure_dp_workflow": { Args: {"org_id":string}; Returns: string };
 "ensure_ledger_book": { Args: {"org_id":string;"target_client":string}; Returns: string };
 "has_org_permission": { Args: {"org_id":string;"permission":string}; Returns: boolean };
+"ignore_bank_transaction": { Args: {"transaction_id":string}; Returns: undefined };
+"import_bank_statement": { Args: {"bank_account":string;"filename":string;"file_checksum":string;"transactions":Json}; Returns: string };
 "is_org_member": { Args: {"org_id":string}; Returns: boolean };
 "ledger_general_ledger": { Args: {"book":string;"target_account":string;"date_from":string;"date_to":string}; Returns: Json };
 "ledger_journal": { Args: {"book":string;"date_from":string;"date_to":string}; Returns: Json };

@@ -13,10 +13,10 @@ export default async function ClientDetail({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ tab?: string; competence?: string; account?: string }>;
+  searchParams: Promise<{ tab?: string; competence?: string; account?: string; bank?: string }>;
 }) {
   const { id } = await params;
-  const { tab: rawTab, competence, account } = await searchParams;
+  const { tab: rawTab, competence, account, bank } = await searchParams;
   const tab = rawTab ?? 'overview';
   const { db, orgId, permissions } = await requirePermission('clients.read');
   const { data: client, error } = await db
@@ -285,7 +285,7 @@ export default async function ClientDetail({
           )}
         </Panel>
       ) : tab === 'ledger' ? (
-        await LedgerPanel({ db, orgId, clientId: id, permissions, competence, account })
+        await LedgerPanel({ db, orgId, clientId: id, permissions, competence, account, bank })
       ) : tab === 'history' ? (
         <Panel>
           {history.data?.length ? (

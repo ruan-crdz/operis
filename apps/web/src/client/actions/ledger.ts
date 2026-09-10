@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { validateJournal, ledgerAccountSchema, expectedNormalBalance } from '@operis/domain';
 import { getContext } from '@/client/auth/context';
+import { invokeEdge } from '@/client/edge';
 import { action, check, id, text } from './helpers';
 export async function ensureLedgerBook(form: FormData) {
   return action(async () => {
@@ -122,5 +123,58 @@ export async function reopenLedgerPeriod(form: FormData) {
     });
     check(error);
     return { ok: true, message: 'Competência reaberta.' };
+  });
+}
+export async function createBankAccount(form: FormData) {
+  return action(async () => {
+    const { db } = await getContext();
+    const { error } = await db.rpc('create_ledger_bank_account', {
+      book: id(form, 'book_id'),
+      for_account: id(form, 'ledger_account_id'),
+      bank: text(form, 'bank_name'),
+      label: text(form, 'account_label'),
+    });
+    check(error);
+    return { ok: true, message: 'Conta bancária cadastrada.' };
+  });
+}
+export async function importBankStatement(form: FormData) {
+  return action(async () => {
+    const result = await invokeEdge<{ id: string; rows: number }>('import-bank-statement', form);
+    return { ok: true, message: `Extrato importado: ${result.rows} lançamentos.` };
+  });
+}
+export async function createClassificationRule(form: FormData) {
+  return action(async () => {
+    const { db } = await getContext();
+    const matchValue = z.string().trim().min(2, 'Informe um trecho do histórico.').parse(text(form, 'match_value'));
+    const { error } = await db.rpc('create_ledger_classification_rule', {
+      book: id(form, 'book_id'),
+      value: matchValue,
+      counterpart: id(form, 'counterpart_account_id'),
+      rule_priority: z.coerce.number().int().min(1).max(1000).parse(text(form, 'priority') || '100'),
+    });
+    check(error);
+    return { ok: true, message: 'Regra de classificação criada.' };
+  });
+}
+export async function createEntryFromBankTransaction(form: FormData) {
+  return action(async () => {
+    const { db } = await getContext();
+    const { error } = await db.rpc('create_entry_from_bank_transaction', {
+      transaction_id: id(form, 'transaction_id'),
+      counterpart: id(form, 'counterpart_account_id'),
+      entry_description: text(form, 'description'),
+    });
+    check(error);
+    return { ok: true, message: 'Lançamento criado a partir do extrato.' };
+  });
+}
+export async function ignoreBankTransaction(form: FormData) {
+  return action(async () => {
+    const { db } = await getContext();
+    const { error } = await db.rpc('ignore_bank_transaction', { transaction_id: id(form, 'transaction_id') });
+    check(error);
+    return { ok: true, message: 'Lançamento do extrato ignorado.' };
   });
 }
