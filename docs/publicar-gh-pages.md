@@ -71,3 +71,7 @@ Sem isto, a importação de planilhas continua funcionando com mapeamento manual
 ## 7. Verificar
 
 Abra a URL publicada. Se o Supabase não estiver configurado corretamente, a tela de preparação (`/configuracao`) continua aparecendo em vez de dados reais. Depois de um cadastro e confirmação de email bem-sucedidos, teste login, criação de escritório e uma importação com `fixtures/employees-valid.csv`. Consulte [ADR-007](adr/ADR-007-static-pages.md) para as decisões técnicas por trás desta publicação.
+
+### Se aparecer “Failed to load chunk”
+
+Isso acontece quando uma aba aberta ainda está executando arquivos de uma publicação anterior. A versão atual do Operis tenta atualizar a página automaticamente uma vez. Se a aba estava aberta antes dessa correção, pressione `Ctrl+F5` uma vez ou abra o site em uma janela anônima. Depois da nova publicação, o workflow também rejeita pacotes que apontem para chunks ausentes.

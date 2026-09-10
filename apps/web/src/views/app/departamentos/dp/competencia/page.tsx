@@ -1,6 +1,5 @@
 import Link from '@/runtime/link';
 import { getDpCockpit } from '@/client/dp';
-import { getOptions } from '@/client/queries';
 import {
   workflowProgress,
   maskCpf,
@@ -70,7 +69,6 @@ export default async function DpCockpit({
       </>
     );
   const process = data.process;
-  const options = await getOptions();
   const progress = workflowProgress(
     data.steps.map((run) => ({
       required: run.workflow_steps?.required ?? true,

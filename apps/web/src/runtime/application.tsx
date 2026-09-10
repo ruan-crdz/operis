@@ -7,11 +7,30 @@ import { applyPreferences } from './preferences';
 import { createClient, isConfigured } from '@/client/db/client';
 import Layout from '@/views/app/layout';
 import NotFound from '@/app/not-found';
+import { deploymentReloadUrl, isChunkLoadError } from './chunks';
 type Loader = (props: {
   params: Promise<{ id: string }>;
   searchParams: Promise<Record<string, string>>;
 }) => ReactNode | Promise<ReactNode>;
 let callback: Promise<void> | undefined;
+const chunkReloadKey = 'operis:chunk-reload';
+
+function recoverFromStaleDeployment(error: unknown) {
+  if (!isChunkLoadError(error)) return false;
+  const lastAttempt = Number(sessionStorage.getItem(chunkReloadKey) ?? 0);
+  if (Date.now() - lastAttempt < 60_000) return false;
+  sessionStorage.setItem(chunkReloadKey, String(Date.now()));
+  window.location.replace(deploymentReloadUrl(window.location.href));
+  return true;
+}
+
+function finishDeploymentRecovery() {
+  sessionStorage.removeItem(chunkReloadKey);
+  const url = new URL(window.location.href);
+  if (!url.searchParams.has('_operis_reload')) return;
+  url.searchParams.delete('_operis_reload');
+  window.history.replaceState(null, '', url.toString());
+}
 async function finishAuth() {
   const url = new URL(window.location.href);
   if (!url.searchParams.has('auth')) return;
@@ -78,6 +97,7 @@ export default function Application() {
       });
       if (url.pathname === '/app' || url.pathname.startsWith('/app/'))
         node = await Layout({ children: node });
+      finishDeploymentRecovery();
       if (current) setScreen({ key, node });
     })().catch((error) => {
       if (!current) return;
@@ -85,6 +105,7 @@ export default function Application() {
         router.replace(error.destination);
         return;
       }
+      if (recoverFromStaleDeployment(error)) return;
       setScreen({
         key,
         node: (
