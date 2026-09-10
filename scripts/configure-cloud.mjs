@@ -16,7 +16,8 @@ async function request(endpoint, body) {
     throw new Error(
       `Supabase: falha na configuração (${response.status}). Confira o token, o projeto e as permissões. Nenhuma credencial foi registrada.`,
     );
-  return response.json();
+  const text = await response.text();
+  return text ? JSON.parse(text) : null;
 }
 const rows = await request('database/query', {
   query: "select value from operis_private.edge_secrets where name='import_signing_key'",
