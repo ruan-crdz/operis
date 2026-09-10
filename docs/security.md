@@ -1,5 +1,11 @@
 # Segurança
 
+## Controles de DP
+
+As novas entidades repetem `organization_id` e usam FKs compostas para impedir relações entre escritórios. O navegador pode lê-las conforme permissões, mas não gravá-las diretamente; RPCs verificam `dp.*`, `occurrences.*`, `processes.*` e versão otimista. Workflow publicado não aceita alteração. Processo concluído exige reabertura com motivo antes de receber nova movimentação.
+
+CPF aparece mascarado no cockpit e não é copiado para logs. Aprovação em dupla é aplicada na RPC, não apenas ocultada na interface. Tokens futuros de portal serão armazenados somente como digest. `enqueue_due_operis_jobs` é exclusiva de `service_role`; nenhuma operação de usuário usa essa chave.
+
 Defesas implementadas: RLS em todas as tabelas públicas; JWT verificado pelo Auth; autorização de Server Actions; chaves estrangeiras compostas; campos de identidade imutáveis; restrição de RPCs por papel; logs de auditoria append-only; optimistic locking; schemas Zod; saída React escapada; buckets privados; URLs de download assinadas por 60 segundos; validação de extensão/MIME/assinatura; originais não sobrescritos; limites contra ZIP bombs; fórmulas/macros rejeitadas na importação.
 
 Next.js compara Origin e Host nas Server Actions. As ações aceitam até 12 MB, enquanto o upload permite até 10 MB (2 MB para avatar). Headers impedem framing, sniffing de conteúdo e acesso a câmera, microfone e localização. Cookies de preferência e escritório têm SameSite=Lax e são HttpOnly; Secure em produção. A identidade continua sendo validada pelo Supabase, sem confiar no cookie de escritório.

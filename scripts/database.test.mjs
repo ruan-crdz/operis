@@ -2,7 +2,7 @@ import { before, after, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID, createHmac } from 'node:crypto';
 import { createDatabase } from './database-harness.mjs';
-let signingKey, db, orgA, orgB, clientA, clientB, taskA, taskB, importA;
+let signingKey, db, orgA, orgB, clientA, clientB, taskA, taskB, importA, dpProcess;
 const a = randomUUID(),
   b = randomUUID(),
   reader = randomUUID();
@@ -418,4 +418,151 @@ test('signed imports reject payload tampering, another actor, expired approval a
     db.query('select public.create_verified_import($1,$2)', [original, signature]),
     /original/,
   );
+});
+
+test('monthly DP process is idempotent and materializes its versioned workflow', async () => {
+  await asUser(a);
+  dpProcess = await scalar(
+    "select public.start_department_process($1,$2,'2027-01',$3,null,'2027-02-05')",
+    [orgA, clientA, a],
+  );
+  assert.equal(
+    await scalar("select public.start_department_process($1,$2,'2027-01',$3,null,'2027-02-05')", [
+      orgA,
+      clientA,
+      a,
+    ]),
+    dpProcess,
+  );
+  assert.equal(
+    await scalar('select count(*)::integer from public.workflow_step_runs where process_id=$1', [
+      dpProcess,
+    ]),
+    16,
+  );
+  assert.equal(
+    await scalar('select count(*)::integer from public.workflow_step_runs where process_id=$1 and task_id is not null', [dpProcess]),
+    13,
+  );
+  assert.equal(
+    await scalar('select count(*)::integer from public.dp_collection_items where process_id=$1', [dpProcess]),
+    13,
+  );
+});
+
+test('workflow dependencies block early completion and release the next step atomically', async () => {
+  const first = (
+    await db.query(
+      'select sr.id,sr.version from public.workflow_step_runs sr join public.workflow_steps s on s.id=sr.workflow_step_id where sr.process_id=$1 and s.position=1',
+      [dpProcess],
+    )
+  ).rows[0];
+  const second = (
+    await db.query(
+      'select sr.id,sr.version from public.workflow_step_runs sr join public.workflow_steps s on s.id=sr.workflow_step_id where sr.process_id=$1 and s.position=2',
+      [dpProcess],
+    )
+  ).rows[0];
+  await assert.rejects(
+    db.query("select public.update_workflow_step_run($1,$2,'completed')", [second.id, second.version]),
+    /Transição|anteriores/,
+  );
+  await db.query("select public.update_workflow_step_run($1,$2,'completed')", [first.id, first.version]);
+  assert.equal(await scalar('select status from public.workflow_step_runs where id=$1', [second.id]), 'ready');
+  assert.equal(
+    await scalar('select status from public.tasks where id=(select task_id from public.workflow_step_runs where id=$1)', [second.id]),
+    'ready',
+  );
+});
+
+test('DP tenant isolation covers reads and cross-tenant process creation', async () => {
+  await asUser(b);
+  assert.equal(
+    await scalar('select count(*)::integer from public.department_processes where id=$1', [dpProcess]),
+    0,
+  );
+  assert.equal(
+    await scalar('select count(*)::integer from public.dp_collection_items where process_id=$1', [dpProcess]),
+    0,
+  );
+  await assert.rejects(
+    db.query("select public.start_department_process($1,$2,'2027-01')", [orgB, clientA]),
+    /Cliente não pertence|Cliente n.o pertence/,
+  );
+  await asUser(a);
+});
+
+test('occurrences validate employee ownership and preserve completed-process immutability', async () => {
+  await assert.rejects(
+    db.query(
+      "select public.create_dp_occurrence($1,'vacation',null,'2027-01-10','manual','Teste',$2)",
+      [dpProcess, randomUUID()],
+    ),
+    /colaborador/,
+  );
+  const occurrence = await scalar(
+    "select public.create_dp_occurrence($1,'admission',null,'2027-01-10','manual','Admissão informada',$2)",
+    [dpProcess, randomUUID()],
+  );
+  assert.equal(await scalar('select status from public.dp_occurrences where id=$1', [occurrence]), 'received');
+});
+
+test('published workflow definition cannot be edited retroactively', async () => {
+  await db.exec('reset role');
+  await assert.rejects(
+    db.query("update public.workflow_steps set name='Alterada' where workflow_version_id=(select workflow_version_id from public.department_processes where id=$1)", [dpProcess]),
+    /imutável|imut.vel/,
+  );
+  await asUser(a);
+});
+
+test('new workflow version starts new processes while old runs keep their version', async () => {
+  const originalVersion = await scalar('select workflow_version_id from public.department_processes where id=$1', [dpProcess]);
+  const cloned = await scalar('select public.clone_workflow_version($1)', [originalVersion]);
+  assert.notEqual(cloned, originalVersion);
+  assert.equal(await scalar('select count(*)::integer from public.workflow_steps where workflow_version_id=$1', [cloned]), 16);
+  await db.query('select public.publish_workflow_version($1)', [cloned]);
+  await db.query('select public.archive_workflow_version($1)', [originalVersion]);
+  const next = await scalar("select public.start_department_process($1,$2,'2027-02')", [orgA, clientA]);
+  assert.equal(await scalar('select workflow_version_id from public.department_processes where id=$1', [next]), cloned);
+  assert.equal(await scalar('select workflow_version_id from public.department_processes where id=$1', [dpProcess]), originalVersion);
+  await db.exec('reset role');
+  await assert.rejects(db.query("update public.workflow_steps set name='Retroativa' where workflow_version_id=$1", [originalVersion]), /imutável|imut.vel/);
+  await asUser(a);
+});
+
+test('four-eyes approval and completion gates close a fully evidenced competence', async () => {
+  const process = await scalar("select public.start_department_process($1,$2,'2027-03',$3,$4)", [orgA, clientA, a, reader]);
+  for (const item of (await db.query('select id from public.dp_collection_items where process_id=$1', [process])).rows)
+    await db.query("select public.update_collection_item($1,'validated','no_occurrence')", [item.id]);
+  await db.query('select public.validate_department_process($1)', [process]);
+  for (let position = 1; position <= 13; position++) {
+    const run = (await db.query('select sr.id,sr.version from public.workflow_step_runs sr join public.workflow_steps s on s.id=sr.workflow_step_id where sr.process_id=$1 and s.position=$2', [process, position])).rows[0];
+    await db.query("select public.update_workflow_step_run($1,$2,'completed')", [run.id, run.version]);
+  }
+  let processVersion = await scalar('select version from public.department_processes where id=$1', [process]);
+  await db.query('select public.request_process_review($1,$2)', [process, processVersion]);
+  processVersion = await scalar('select version from public.department_processes where id=$1', [process]);
+  await assert.rejects(db.query("select public.review_department_process($1,$2,'approved')", [process, processVersion]), /segunda pessoa/);
+  const operatorRole = await scalar("select id from public.roles where organization_id=$1 and name='Operador'", [orgA]);
+  await db.query("select public.manage_member($1,'reader@example.test',$2,null)", [orgA, operatorRole]);
+  await asUser(reader);
+  await db.query("select public.review_department_process($1,$2,'approved')", [process, processVersion]);
+  assert.equal(
+    await scalar("select t.status from public.tasks t join public.workflow_step_runs sr on sr.task_id=t.id join public.workflow_steps s on s.id=sr.workflow_step_id where sr.process_id=$1 and s.code='approval'", [process]),
+    'completed',
+  );
+  assert.equal(
+    await scalar("select t.status from public.tasks t join public.workflow_step_runs sr on sr.task_id=t.id join public.workflow_steps s on s.id=sr.workflow_step_id where sr.process_id=$1 and s.code='close'", [process]),
+    'ready',
+  );
+  for (const position of [15, 16]) {
+    const run = (await db.query('select sr.id,sr.version from public.workflow_step_runs sr join public.workflow_steps s on s.id=sr.workflow_step_id where sr.process_id=$1 and s.position=$2', [process, position])).rows[0];
+    await db.query("select public.update_workflow_step_run($1,$2,'completed')", [run.id, run.version]);
+  }
+  processVersion = await scalar('select version from public.department_processes where id=$1', [process]);
+  await db.query('select public.complete_department_process($1,$2)', [process, processVersion]);
+  assert.equal(await scalar('select status from public.department_processes where id=$1', [process]), 'completed');
+  assert.equal(await scalar("select count(*)::integer from public.process_evidence where process_id=$1 and evidence_type='approval'", [process]), 1);
+  await asUser(a);
 });

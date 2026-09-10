@@ -24,6 +24,7 @@ import {
   Sun,
   Moon,
   MonitorCog,
+  BriefcaseBusiness,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
@@ -37,6 +38,13 @@ const navigation = [
   { href: '/app/fila', label: 'Minha fila', icon: ListTodo, group: 'Operação', permission: 'tasks.read' },
   { href: '/app/tarefas', label: 'Tarefas', icon: Columns3, group: '', permission: 'tasks.read' },
   { href: '/app/clientes', label: 'Clientes', icon: Building2, group: '', permission: 'clients.read' },
+  {
+    href: '/app/departamentos/dp',
+    label: 'Departamento Pessoal',
+    icon: BriefcaseBusiness,
+    group: '',
+    permission: 'processes.read',
+  },
   { href: '/app/departamentos', label: 'Departamentos', icon: Users, group: '', permission: 'members.read' },
   { href: '/app/assistente', label: 'Assistente', icon: Sparkles, group: 'Inteligência' },
   {
@@ -143,7 +151,13 @@ export function AppShell({
               await invokeAction(setTheme, form);
             }}
           >
-            {theme === 'light' ? <Sun size={16} /> : theme === 'dark' ? <Moon size={16} /> : <MonitorCog size={16} />}
+            {theme === 'light' ? (
+              <Sun size={16} />
+            ) : theme === 'dark' ? (
+              <Moon size={16} />
+            ) : (
+              <MonitorCog size={16} />
+            )}
           </button>
         </div>
         <div className="workspace">

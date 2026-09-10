@@ -1,5 +1,11 @@
 # Entrega do primeiro MVP Operis
 
+## Atualização: Fase 2 — Workflow Engine + Departamento Pessoal
+
+Em 10/09/2026, o MVP recebeu workflow versionado, workspace e carteira mensal de DP, checklist estruturado, colaboradores persistentes, ocorrências, variáveis operacionais, validações, revisão em dupla, evidências, outbox/pgmq opcional e seed local com 30 clientes. O export continua compatível com GitHub Pages.
+
+Resultados locais: lint e typecheck aprovados; 37 testes Vitest e 33 testes PostgreSQL/PGlite aprovados; build estático e `pages:check` aprovados; Playwright com 10 aprovados e 2 cenários autenticados ignorados por ausência de Supabase/credenciais. Docker não está instalado nesta máquina, portanto o seed e os serviços Supabase reais não foram executados aqui. Veja [estado atual](current-state.md), [workflow](workflow-engine.md) e [DP](departamento-pessoal.md).
+
 Data: 10/09/2026. Implementação local baseada em `prompt.txt`, preservado como referência de produto. O código foi verificado nas condições abaixo; a integração completa com os serviços Supabase ainda precisa ser executada.
 
 ## 1. O que foi criado

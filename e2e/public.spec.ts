@@ -33,24 +33,27 @@ test('login remains usable on a narrow screen', async ({ page }) => {
 });
 test('desktop visual record', async ({ page }) => {
   await page.goto('./#/login');
-  await expect(page.getByRole('button', {name:'Entrar no Operis'})).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Entrar no Operis' })).toBeVisible();
   await page.screenshot({ path: 'test-results/login-desktop.png', fullPage: true, caret: 'initial' });
   await page.goto('./#/configuracao');
-  await expect(page.getByRole('heading', {name:'Uma base pronta para sua operação.'})).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Uma base pronta para sua operação.' })).toBeVisible();
   await page.screenshot({ path: 'test-results/configuration-desktop.png', fullPage: true, caret: 'initial' });
 });
 
-test('shared links survive reload, a new tab, and browser history on static hosting',async({page,context})=>{
- await page.goto('./#/login');
- await page.getByRole('link',{name:'Criar uma conta'}).click();
- const shared=page.url();
- await page.reload();
- await expect(page.getByRole('button',{name:'Criar minha conta'})).toBeVisible();
- const other=await context.newPage();
- await other.goto(shared);
- await expect(other.getByRole('button',{name:'Criar minha conta'})).toBeVisible();
- await page.goBack();
- await expect(page.getByRole('button',{name:'Entrar no Operis'})).toBeVisible();
+test('shared links survive reload, a new tab, and browser history on static hosting', async ({
+  page,
+  context,
+}) => {
+  await page.goto('./#/login');
+  await page.getByRole('link', { name: 'Criar uma conta' }).click();
+  const shared = page.url();
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'Criar conta' })).toBeVisible();
+  const other = await context.newPage();
+  await other.goto(shared);
+  await expect(other.getByRole('button', { name: 'Criar conta' })).toBeVisible();
+  await page.goBack();
+  await expect(page.getByRole('button', { name: 'Entrar no Operis' })).toBeVisible();
 });
 test('dark theme and compact density render accessibly from browser preferences', async ({
   page,

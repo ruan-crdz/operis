@@ -27,7 +27,14 @@ export default async function Departments() {
             <p className="muted" style={{ margin: '12px 0 20px' }}>
               Acompanhe tarefas, responsáveis e prazos deste departamento.
             </p>
-            <Link className="button button-secondary" href={`/app/tarefas?department=${d.id}`}>
+            <Link
+              className="button button-secondary"
+              href={
+                d.name === 'Departamento Pessoal'
+                  ? '/app/departamentos/dp'
+                  : `/app/tarefas?department=${d.id}`
+              }
+            >
               Abrir operação ↗
             </Link>
             {d.name === 'Departamento Pessoal' && (

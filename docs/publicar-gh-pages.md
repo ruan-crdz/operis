@@ -1,17 +1,19 @@
 # Publicar o Operis (GitHub Pages + Supabase)
 
+> A migration 009 da Fase 2 é aplicada pelo workflow **Configurar Supabase**. Depois dela, os usuários veem **Departamento Pessoal** no menu conforme as permissões do papel. A extensão `pgmq` é ativada automaticamente quando estiver disponível no projeto; a outbox continua preservando eventos se ela não estiver.
+
 Guia do responsável pela instalação. Ninguém mais precisa executar isto nem receber chaves. Nenhum passo aqui expõe segredos no repositório: variáveis e secrets ficam apenas nas configurações do GitHub e do Supabase.
 
 ## 1. Dados do projeto Supabase
 
 Em [supabase.com/dashboard](https://supabase.com/dashboard), crie ou abra o projeto e anote em **Project Settings**:
 
-| Onde encontrar                                  | Valor a anotar                                                        |
-| ------------------------------------------------ | ---------------------------------------------------------------------- |
-| Project Settings → General → Reference ID        | referência do projeto (20 letras minúsculas)                          |
-| Project Settings → Data API                      | Project URL (`https://<referência>.supabase.co`)                      |
-| Project Settings → API Keys                      | chave **Publishable** (ou a `anon key` legada)                        |
-| Project Settings → Database                      | senha do banco definida na criação (redefina ali se não tiver)        |
+| Onde encontrar                            | Valor a anotar                                                 |
+| ----------------------------------------- | -------------------------------------------------------------- |
+| Project Settings → General → Reference ID | referência do projeto (20 letras minúsculas)                   |
+| Project Settings → Data API               | Project URL (`https://<referência>.supabase.co`)               |
+| Project Settings → API Keys               | chave **Publishable** (ou a `anon key` legada)                 |
+| Project Settings → Database               | senha do banco definida na criação (redefina ali se não tiver) |
 
 Em [supabase.com/dashboard/account/tokens](https://supabase.com/dashboard/account/tokens), gere um **Personal access token**.
 
@@ -21,19 +23,19 @@ No repositório: **Settings → Secrets and variables → Actions**.
 
 Aba **Variables**, botão **New repository variable** — crie exatamente estes 4 nomes:
 
-| Nome exato                             | Cole aqui                                                                                   |
-| --------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_APP_URL`                   | URL final do site, com barra no fim: `https://<usuário>.github.io/<repositório>/`             |
-| `NEXT_PUBLIC_SUPABASE_URL`              | Project URL do passo 1                                                                        |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`  | chave Publishable/anon do passo 1                                                             |
-| `SUPABASE_PROJECT_REF`                  | referência do projeto do passo 1 (20 letras minúsculas)                                       |
+| Nome exato                             | Cole aqui                                                                         |
+| -------------------------------------- | --------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_APP_URL`                  | URL final do site, com barra no fim: `https://<usuário>.github.io/<repositório>/` |
+| `NEXT_PUBLIC_SUPABASE_URL`             | Project URL do passo 1                                                            |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | chave Publishable/anon do passo 1                                                 |
+| `SUPABASE_PROJECT_REF`                 | referência do projeto do passo 1 (20 letras minúsculas)                           |
 
 Aba **Secrets**, botão **New repository secret** — crie exatamente estes 2 nomes:
 
-| Nome exato              | Cole aqui                          |
-| ------------------------ | ------------------------------------ |
-| `SUPABASE_ACCESS_TOKEN`  | token pessoal gerado no passo 1      |
-| `SUPABASE_DB_PASSWORD`   | senha do banco do passo 1            |
+| Nome exato              | Cole aqui                       |
+| ----------------------- | ------------------------------- |
+| `SUPABASE_ACCESS_TOKEN` | token pessoal gerado no passo 1 |
+| `SUPABASE_DB_PASSWORD`  | senha do banco do passo 1       |
 
 Use domínio próprio no lugar de `github.io/<repositório>` apenas se ele já estiver configurado em **Settings → Pages**; `NEXT_PUBLIC_APP_URL` precisa refletir a URL real que os visitantes vão acessar.
 

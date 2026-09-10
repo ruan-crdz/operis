@@ -63,22 +63,23 @@ O callback é `/auth/callback`. Para recuperação, a URL redireciona a `/atuali
 corepack pnpm db:seed
 ```
 
-Cria **Operis Demo Accounting**, clientes explicitamente fictícios, departamentos, tarefas, comentários e solicitação documental. Conta local: `demo@operis.test` / `OperisDemo!2026`. O seed é opt-in, não cria arquivos falsos no Storage e não chama IA. O script recusa bancos remotos. O SQL de seed não foi executado neste ambiente sem Docker; o CI contém sua verificação com Supabase real.
+Cria **Operis Demo Accounting**, 30 clientes explicitamente fictícios, dois usuários, processos mensais de DP distribuídos entre estados, tarefas, comentários e solicitação documental. Contas locais: `demo@operis.test` e `revisor@operis.test`, ambas com senha `OperisDemo!2026`. O seed é opt-in, não cria arquivos falsos no Storage e não chama IA. O script recusa bancos remotos. O SQL de seed não foi executado neste ambiente sem Docker; o CI contém sua verificação com Supabase real.
 
 Fixtures em `fixtures/`: CSV/XLSX válidos, inválidos e com estrutura alterada. Recrie com `pnpm fixtures`. Os valores são exclusivamente de teste. Para demonstrar a importação: escolha um cliente/competência, envie `employees-valid.xlsx`, mapeie Nome/CPF/Salário/Admissão, valide, revise e aprove. Execute “Processar agora” ou aguarde o cron. Reabrir não duplica os registros.
 
 ## Rotas
 
-| Área         | Rotas                                                                                         |
-| ------------ | --------------------------------------------------------------------------------------------- |
-| Acesso       | `/login`, `/cadastro`, `/recuperar-senha`, `/atualizar-senha`, `/onboarding`, `/configuracao` |
-| Operação     | `/app`, `/app/fila`, `/app/tarefas`, `/app/tarefas/nova`, `/app/tarefas/[id]`                 |
-| Clientes     | `/app/clientes`, `/app/clientes/novo`, `/app/clientes/[id]`                                   |
-| Estrutura    | `/app/departamentos`, `/app/configuracoes/equipe`                                             |
-| Documentos   | `/app/documentos`, `/app/documentos/enviar`, `/app/documentos/solicitar`                      |
-| Importações  | `/app/importacoes`, `/app/importacoes/nova`, `/app/importacoes/[id]`                          |
-| Controle     | `/app/notificacoes`, `/app/auditoria`, `/app/sem-permissao`                                   |
-| Preferências | `/app/configuracoes`, `/perfil`, `/aparencia`, `/organizacao` sob `/app/configuracoes`        |
+| Área         | Rotas                                                                                            |
+| ------------ | ------------------------------------------------------------------------------------------------ |
+| Acesso       | `/login`, `/cadastro`, `/recuperar-senha`, `/atualizar-senha`, `/onboarding`, `/configuracao`    |
+| Operação     | `/app`, `/app/fila`, `/app/tarefas`, `/app/tarefas/nova`, `/app/tarefas/[id]`                    |
+| Clientes     | `/app/clientes`, `/app/clientes/novo`, `/app/clientes/[id]`                                      |
+| Estrutura    | `/app/departamentos`, `/app/configuracoes/equipe`                                                |
+| DP           | `/app/departamentos/dp`, `/app/departamentos/dp/pendencias`, `/app/departamentos/dp/competencia` |
+| Documentos   | `/app/documentos`, `/app/documentos/enviar`, `/app/documentos/solicitar`                         |
+| Importações  | `/app/importacoes`, `/app/importacoes/nova`, `/app/importacoes/[id]`                             |
+| Controle     | `/app/notificacoes`, `/app/auditoria`, `/app/sem-permissao`                                      |
+| Preferências | `/app/configuracoes`, `/perfil`, `/aparencia`, `/organizacao` sob `/app/configuracoes`           |
 
 ## Verificações
 
@@ -91,7 +92,7 @@ pnpm exec playwright install chromium
 pnpm test:e2e
 ```
 
-`pnpm test` inclui Vitest e testes de banco PostgreSQL/PGlite com as migrations reais. `pnpm db:test` executa pgTAP com Supabase local. O E2E autenticado requer `E2E_EMAIL` e `E2E_PASSWORD` de uma conta de teste; sem elas, somente esse cenário é explicitamente ignorado. Ele cria registros persistentes. `pnpm db:types` regenera tipos de metadados PostgreSQL; `pnpm db:types:supabase` usa o gerador oficial quando o Supabase está ativo.
+`pnpm test` inclui Vitest e testes de banco PostgreSQL/PGlite com as migrations reais. `pnpm db:test` executa pgTAP com Supabase local. O E2E base requer `E2E_EMAIL` e `E2E_PASSWORD`; o fluxo de aprovação em dupla também requer `E2E_REVIEWER_EMAIL` e `E2E_REVIEWER_PASSWORD` de outro membro do mesmo escritório de teste. Sem elas, esses cenários são explicitamente ignorados. Eles criam registros persistentes. `pnpm db:types` regenera tipos de metadados PostgreSQL; `pnpm db:types:supabase` usa o gerador oficial quando o Supabase está ativo.
 
 ## Arquitetura e limites
 

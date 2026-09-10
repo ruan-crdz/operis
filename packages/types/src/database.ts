@@ -184,6 +184,78 @@ Update: {
 };
 Relationships: [{foreignKeyName:"competencies_organization_id_client_id_fkey";columns:["organization_id","client_id"];isOneToOne:false;referencedRelation:"clients";referencedColumns:["organization_id","id"]},{foreignKeyName:"competencies_organization_id_fkey";columns:["organization_id"];isOneToOne:false;referencedRelation:"organizations";referencedColumns:["id"]}];
 };
+"department_processes": {
+Row: {
+"id": string;
+"organization_id": string;
+"department_id": string;
+"client_id": string;
+"competence_id": string;
+"competence": string;
+"workflow_version_id": string;
+"status": string;
+"owner_id": string | null;
+"reviewer_id": string | null;
+"prepared_by": string | null;
+"started_at": string | null;
+"due_at": string | null;
+"ready_at": string | null;
+"completed_at": string | null;
+"blocked_reason": string | null;
+"metadata": Json;
+"version": number;
+"created_by": string;
+"created_at": string;
+"updated_at": string;
+};
+Insert: {
+"id"?: string;
+"organization_id": string;
+"department_id": string;
+"client_id": string;
+"competence_id": string;
+"competence": string;
+"workflow_version_id": string;
+"status"?: string;
+"owner_id"?: string | null;
+"reviewer_id"?: string | null;
+"prepared_by"?: string | null;
+"started_at"?: string | null;
+"due_at"?: string | null;
+"ready_at"?: string | null;
+"completed_at"?: string | null;
+"blocked_reason"?: string | null;
+"metadata"?: Json;
+"version"?: number;
+"created_by"?: string;
+"created_at"?: string;
+"updated_at"?: string;
+};
+Update: {
+"id"?: string;
+"organization_id"?: string;
+"department_id"?: string;
+"client_id"?: string;
+"competence_id"?: string;
+"competence"?: string;
+"workflow_version_id"?: string;
+"status"?: string;
+"owner_id"?: string | null;
+"reviewer_id"?: string | null;
+"prepared_by"?: string | null;
+"started_at"?: string | null;
+"due_at"?: string | null;
+"ready_at"?: string | null;
+"completed_at"?: string | null;
+"blocked_reason"?: string | null;
+"metadata"?: Json;
+"version"?: number;
+"created_by"?: string;
+"created_at"?: string;
+"updated_at"?: string;
+};
+Relationships: [{foreignKeyName:"department_processes_created_by_fkey";columns:["created_by"];isOneToOne:false;referencedRelation:"profiles";referencedColumns:["id"]},{foreignKeyName:"department_processes_organization_id_client_id_fkey";columns:["organization_id","client_id"];isOneToOne:false;referencedRelation:"clients";referencedColumns:["organization_id","id"]},{foreignKeyName:"department_processes_organization_id_competence_id_fkey";columns:["organization_id","competence_id"];isOneToOne:false;referencedRelation:"competencies";referencedColumns:["organization_id","id"]},{foreignKeyName:"department_processes_organization_id_department_id_fkey";columns:["organization_id","department_id"];isOneToOne:false;referencedRelation:"departments";referencedColumns:["organization_id","id"]},{foreignKeyName:"department_processes_organization_id_fkey";columns:["organization_id"];isOneToOne:false;referencedRelation:"organizations";referencedColumns:["id"]},{foreignKeyName:"department_processes_organization_id_owner_id_fkey";columns:["organization_id","owner_id"];isOneToOne:false;referencedRelation:"organization_members";referencedColumns:["organization_id","user_id"]},{foreignKeyName:"department_processes_organization_id_reviewer_id_fkey";columns:["organization_id","reviewer_id"];isOneToOne:false;referencedRelation:"organization_members";referencedColumns:["organization_id","user_id"]},{foreignKeyName:"department_processes_organization_id_workflow_version_id_fkey";columns:["organization_id","workflow_version_id"];isOneToOne:false;referencedRelation:"workflow_versions";referencedColumns:["organization_id","id"]},{foreignKeyName:"department_processes_prepared_by_fkey";columns:["prepared_by"];isOneToOne:false;referencedRelation:"profiles";referencedColumns:["id"]}];
+};
 "departments": {
 Row: {
 "id": string;
@@ -252,6 +324,12 @@ Row: {
 "created_by": string;
 "created_at": string;
 "updated_at": string;
+"external_token_hash": string | null;
+"external_status": string;
+"external_sent_at": string | null;
+"external_first_viewed_at": string | null;
+"external_responded_at": string | null;
+"external_expires_at": string | null;
 };
 Insert: {
 "id"?: string;
@@ -263,6 +341,12 @@ Insert: {
 "created_by"?: string;
 "created_at"?: string;
 "updated_at"?: string;
+"external_token_hash"?: string | null;
+"external_status"?: string;
+"external_sent_at"?: string | null;
+"external_first_viewed_at"?: string | null;
+"external_responded_at"?: string | null;
+"external_expires_at"?: string | null;
 };
 Update: {
 "id"?: string;
@@ -274,6 +358,12 @@ Update: {
 "created_by"?: string;
 "created_at"?: string;
 "updated_at"?: string;
+"external_token_hash"?: string | null;
+"external_status"?: string;
+"external_sent_at"?: string | null;
+"external_first_viewed_at"?: string | null;
+"external_responded_at"?: string | null;
+"external_expires_at"?: string | null;
 };
 Relationships: [{foreignKeyName:"document_requests_created_by_fkey";columns:["created_by"];isOneToOne:false;referencedRelation:"profiles";referencedColumns:["id"]},{foreignKeyName:"document_requests_organization_id_client_id_fkey";columns:["organization_id","client_id"];isOneToOne:false;referencedRelation:"clients";referencedColumns:["organization_id","id"]},{foreignKeyName:"document_requests_organization_id_fkey";columns:["organization_id"];isOneToOne:false;referencedRelation:"organizations";referencedColumns:["id"]}];
 };
@@ -322,6 +412,183 @@ Update: {
 };
 Relationships: [{foreignKeyName:"documents_organization_id_client_id_fkey";columns:["organization_id","client_id"];isOneToOne:false;referencedRelation:"clients";referencedColumns:["organization_id","id"]},{foreignKeyName:"documents_organization_id_fkey";columns:["organization_id"];isOneToOne:false;referencedRelation:"organizations";referencedColumns:["id"]},{foreignKeyName:"documents_uploaded_by_fkey";columns:["uploaded_by"];isOneToOne:false;referencedRelation:"profiles";referencedColumns:["id"]}];
 };
+"dp_collection_items": {
+Row: {
+"id": string;
+"organization_id": string;
+"process_id": string;
+"code": string;
+"label": string;
+"position": number;
+"status": string;
+"response": string;
+"document_id": string | null;
+"notes": string;
+"updated_by": string | null;
+"updated_at": string;
+};
+Insert: {
+"id"?: string;
+"organization_id": string;
+"process_id": string;
+"code": string;
+"label": string;
+"position": number;
+"status"?: string;
+"response"?: string;
+"document_id"?: string | null;
+"notes"?: string;
+"updated_by"?: string | null;
+"updated_at"?: string;
+};
+Update: {
+"id"?: string;
+"organization_id"?: string;
+"process_id"?: string;
+"code"?: string;
+"label"?: string;
+"position"?: number;
+"status"?: string;
+"response"?: string;
+"document_id"?: string | null;
+"notes"?: string;
+"updated_by"?: string | null;
+"updated_at"?: string;
+};
+Relationships: [{foreignKeyName:"dp_collection_items_organization_id_document_id_fkey";columns:["organization_id","document_id"];isOneToOne:false;referencedRelation:"documents";referencedColumns:["organization_id","id"]},{foreignKeyName:"dp_collection_items_organization_id_fkey";columns:["organization_id"];isOneToOne:false;referencedRelation:"organizations";referencedColumns:["id"]},{foreignKeyName:"dp_collection_items_organization_id_process_id_fkey";columns:["organization_id","process_id"];isOneToOne:false;referencedRelation:"department_processes";referencedColumns:["organization_id","id"]},{foreignKeyName:"dp_collection_items_updated_by_fkey";columns:["updated_by"];isOneToOne:false;referencedRelation:"profiles";referencedColumns:["id"]}];
+};
+"dp_occurrences": {
+Row: {
+"id": string;
+"organization_id": string;
+"process_id": string;
+"client_id": string;
+"competence_id": string;
+"type": string;
+"status": string;
+"employee_id": string | null;
+"effective_date": string;
+"reported_at": string;
+"source": string;
+"source_document_id": string | null;
+"source_import_id": string | null;
+"source_sheet": string | null;
+"source_row": number | null;
+"idempotency_key": string;
+"created_by": string;
+"reviewed_by": string | null;
+"notes": string;
+"metadata": Json;
+"created_at": string;
+"updated_at": string;
+};
+Insert: {
+"id"?: string;
+"organization_id": string;
+"process_id": string;
+"client_id": string;
+"competence_id": string;
+"type": string;
+"status"?: string;
+"employee_id"?: string | null;
+"effective_date": string;
+"reported_at"?: string;
+"source": string;
+"source_document_id"?: string | null;
+"source_import_id"?: string | null;
+"source_sheet"?: string | null;
+"source_row"?: number | null;
+"idempotency_key": string;
+"created_by"?: string;
+"reviewed_by"?: string | null;
+"notes"?: string;
+"metadata"?: Json;
+"created_at"?: string;
+"updated_at"?: string;
+};
+Update: {
+"id"?: string;
+"organization_id"?: string;
+"process_id"?: string;
+"client_id"?: string;
+"competence_id"?: string;
+"type"?: string;
+"status"?: string;
+"employee_id"?: string | null;
+"effective_date"?: string;
+"reported_at"?: string;
+"source"?: string;
+"source_document_id"?: string | null;
+"source_import_id"?: string | null;
+"source_sheet"?: string | null;
+"source_row"?: number | null;
+"idempotency_key"?: string;
+"created_by"?: string;
+"reviewed_by"?: string | null;
+"notes"?: string;
+"metadata"?: Json;
+"created_at"?: string;
+"updated_at"?: string;
+};
+Relationships: [{foreignKeyName:"dp_occurrences_created_by_fkey";columns:["created_by"];isOneToOne:false;referencedRelation:"profiles";referencedColumns:["id"]},{foreignKeyName:"dp_occurrences_organization_id_client_id_fkey";columns:["organization_id","client_id"];isOneToOne:false;referencedRelation:"clients";referencedColumns:["organization_id","id"]},{foreignKeyName:"dp_occurrences_organization_id_competence_id_fkey";columns:["organization_id","competence_id"];isOneToOne:false;referencedRelation:"competencies";referencedColumns:["organization_id","id"]},{foreignKeyName:"dp_occurrences_organization_id_employee_id_fkey";columns:["organization_id","employee_id"];isOneToOne:false;referencedRelation:"employees";referencedColumns:["organization_id","id"]},{foreignKeyName:"dp_occurrences_organization_id_fkey";columns:["organization_id"];isOneToOne:false;referencedRelation:"organizations";referencedColumns:["id"]},{foreignKeyName:"dp_occurrences_organization_id_process_id_fkey";columns:["organization_id","process_id"];isOneToOne:false;referencedRelation:"department_processes";referencedColumns:["organization_id","id"]},{foreignKeyName:"dp_occurrences_organization_id_source_document_id_fkey";columns:["organization_id","source_document_id"];isOneToOne:false;referencedRelation:"documents";referencedColumns:["organization_id","id"]},{foreignKeyName:"dp_occurrences_organization_id_source_import_id_fkey";columns:["organization_id","source_import_id"];isOneToOne:false;referencedRelation:"imports";referencedColumns:["organization_id","id"]},{foreignKeyName:"dp_occurrences_reviewed_by_fkey";columns:["reviewed_by"];isOneToOne:false;referencedRelation:"profiles";referencedColumns:["id"]}];
+};
+"dp_validation_results": {
+Row: {
+"id": string;
+"organization_id": string;
+"process_id": string;
+"validation_run_id": string;
+"rule_id": string;
+"rule_version": number;
+"category": string;
+"severity": string;
+"entity_type": string;
+"entity_id": string | null;
+"message": string;
+"details": Json;
+"created_at": string;
+"resolved_at": string | null;
+"resolved_by": string | null;
+"resolution": string | null;
+};
+Insert: {
+"id"?: string;
+"organization_id": string;
+"process_id": string;
+"validation_run_id": string;
+"rule_id": string;
+"rule_version": number;
+"category": string;
+"severity": string;
+"entity_type": string;
+"entity_id"?: string | null;
+"message": string;
+"details"?: Json;
+"created_at"?: string;
+"resolved_at"?: string | null;
+"resolved_by"?: string | null;
+"resolution"?: string | null;
+};
+Update: {
+"id"?: string;
+"organization_id"?: string;
+"process_id"?: string;
+"validation_run_id"?: string;
+"rule_id"?: string;
+"rule_version"?: number;
+"category"?: string;
+"severity"?: string;
+"entity_type"?: string;
+"entity_id"?: string | null;
+"message"?: string;
+"details"?: Json;
+"created_at"?: string;
+"resolved_at"?: string | null;
+"resolved_by"?: string | null;
+"resolution"?: string | null;
+};
+Relationships: [{foreignKeyName:"dp_validation_results_organization_id_fkey";columns:["organization_id"];isOneToOne:false;referencedRelation:"organizations";referencedColumns:["id"]},{foreignKeyName:"dp_validation_results_organization_id_process_id_fkey";columns:["organization_id","process_id"];isOneToOne:false;referencedRelation:"department_processes";referencedColumns:["organization_id","id"]},{foreignKeyName:"dp_validation_results_resolved_by_fkey";columns:["resolved_by"];isOneToOne:false;referencedRelation:"profiles";referencedColumns:["id"]}];
+};
 "employee_snapshots": {
 Row: {
 "id": string;
@@ -360,6 +627,51 @@ Update: {
 "created_at"?: string;
 };
 Relationships: [{foreignKeyName:"employee_snapshots_organization_id_client_id_fkey";columns:["organization_id","client_id"];isOneToOne:false;referencedRelation:"clients";referencedColumns:["organization_id","id"]},{foreignKeyName:"employee_snapshots_organization_id_fkey";columns:["organization_id"];isOneToOne:false;referencedRelation:"organizations";referencedColumns:["id"]},{foreignKeyName:"employee_snapshots_organization_id_import_id_fkey";columns:["organization_id","import_id"];isOneToOne:false;referencedRelation:"imports";referencedColumns:["organization_id","id"]}];
+};
+"employees": {
+Row: {
+"id": string;
+"organization_id": string;
+"client_id": string;
+"name": string;
+"cpf": string;
+"registration": string | null;
+"admission_date": string | null;
+"termination_date": string | null;
+"status": string;
+"source_import_id": string | null;
+"created_at": string;
+"updated_at": string;
+};
+Insert: {
+"id"?: string;
+"organization_id": string;
+"client_id": string;
+"name": string;
+"cpf": string;
+"registration"?: string | null;
+"admission_date"?: string | null;
+"termination_date"?: string | null;
+"status"?: string;
+"source_import_id"?: string | null;
+"created_at"?: string;
+"updated_at"?: string;
+};
+Update: {
+"id"?: string;
+"organization_id"?: string;
+"client_id"?: string;
+"name"?: string;
+"cpf"?: string;
+"registration"?: string | null;
+"admission_date"?: string | null;
+"termination_date"?: string | null;
+"status"?: string;
+"source_import_id"?: string | null;
+"created_at"?: string;
+"updated_at"?: string;
+};
+Relationships: [{foreignKeyName:"employees_organization_id_client_id_fkey";columns:["organization_id","client_id"];isOneToOne:false;referencedRelation:"clients";referencedColumns:["organization_id","id"]},{foreignKeyName:"employees_organization_id_fkey";columns:["organization_id"];isOneToOne:false;referencedRelation:"organizations";referencedColumns:["id"]},{foreignKeyName:"employees_organization_id_source_import_id_fkey";columns:["organization_id","source_import_id"];isOneToOne:false;referencedRelation:"imports";referencedColumns:["organization_id","id"]}];
 };
 "import_templates": {
 Row: {
@@ -423,6 +735,7 @@ Row: {
 "correlation_id": string;
 "created_at": string;
 "updated_at": string;
+"import_type": string;
 };
 Insert: {
 "id"?: string;
@@ -449,6 +762,7 @@ Insert: {
 "correlation_id"?: string;
 "created_at"?: string;
 "updated_at"?: string;
+"import_type"?: string;
 };
 Update: {
 "id"?: string;
@@ -475,6 +789,7 @@ Update: {
 "correlation_id"?: string;
 "created_at"?: string;
 "updated_at"?: string;
+"import_type"?: string;
 };
 Relationships: [{foreignKeyName:"imports_approved_by_fkey";columns:["approved_by"];isOneToOne:false;referencedRelation:"profiles";referencedColumns:["id"]},{foreignKeyName:"imports_created_by_fkey";columns:["created_by"];isOneToOne:false;referencedRelation:"profiles";referencedColumns:["id"]},{foreignKeyName:"imports_organization_id_client_id_fkey";columns:["organization_id","client_id"];isOneToOne:false;referencedRelation:"clients";referencedColumns:["organization_id","id"]},{foreignKeyName:"imports_organization_id_fkey";columns:["organization_id"];isOneToOne:false;referencedRelation:"organizations";referencedColumns:["id"]}];
 };
@@ -649,6 +964,72 @@ Update: {
 };
 Relationships: [{foreignKeyName:"outbox_events_organization_id_fkey";columns:["organization_id"];isOneToOne:false;referencedRelation:"organizations";referencedColumns:["id"]}];
 };
+"payroll_variables": {
+Row: {
+"id": string;
+"organization_id": string;
+"process_id": string;
+"client_id": string;
+"competence": string;
+"employee_id": string | null;
+"code": string;
+"kind": string;
+"quantity": number | null;
+"amount": number | null;
+"source": string;
+"source_import_id": string | null;
+"source_sheet": string | null;
+"source_row": number | null;
+"idempotency_key": string;
+"status": string;
+"metadata": Json;
+"created_by": string;
+"created_at": string;
+};
+Insert: {
+"id"?: string;
+"organization_id": string;
+"process_id": string;
+"client_id": string;
+"competence": string;
+"employee_id"?: string | null;
+"code": string;
+"kind": string;
+"quantity"?: number | null;
+"amount"?: number | null;
+"source": string;
+"source_import_id"?: string | null;
+"source_sheet"?: string | null;
+"source_row"?: number | null;
+"idempotency_key": string;
+"status"?: string;
+"metadata"?: Json;
+"created_by"?: string;
+"created_at"?: string;
+};
+Update: {
+"id"?: string;
+"organization_id"?: string;
+"process_id"?: string;
+"client_id"?: string;
+"competence"?: string;
+"employee_id"?: string | null;
+"code"?: string;
+"kind"?: string;
+"quantity"?: number | null;
+"amount"?: number | null;
+"source"?: string;
+"source_import_id"?: string | null;
+"source_sheet"?: string | null;
+"source_row"?: number | null;
+"idempotency_key"?: string;
+"status"?: string;
+"metadata"?: Json;
+"created_by"?: string;
+"created_at"?: string;
+};
+Relationships: [{foreignKeyName:"payroll_variables_created_by_fkey";columns:["created_by"];isOneToOne:false;referencedRelation:"profiles";referencedColumns:["id"]},{foreignKeyName:"payroll_variables_organization_id_client_id_fkey";columns:["organization_id","client_id"];isOneToOne:false;referencedRelation:"clients";referencedColumns:["organization_id","id"]},{foreignKeyName:"payroll_variables_organization_id_employee_id_fkey";columns:["organization_id","employee_id"];isOneToOne:false;referencedRelation:"employees";referencedColumns:["organization_id","id"]},{foreignKeyName:"payroll_variables_organization_id_fkey";columns:["organization_id"];isOneToOne:false;referencedRelation:"organizations";referencedColumns:["id"]},{foreignKeyName:"payroll_variables_organization_id_process_id_fkey";columns:["organization_id","process_id"];isOneToOne:false;referencedRelation:"department_processes";referencedColumns:["organization_id","id"]},{foreignKeyName:"payroll_variables_organization_id_source_import_id_fkey";columns:["organization_id","source_import_id"];isOneToOne:false;referencedRelation:"imports";referencedColumns:["organization_id","id"]}];
+};
 "permissions": {
 Row: {
 "id": string;
@@ -660,6 +1041,72 @@ Update: {
 "id"?: string;
 };
 Relationships: [];
+};
+"process_approvals": {
+Row: {
+"id": string;
+"organization_id": string;
+"process_id": string;
+"requested_by": string;
+"decided_by": string | null;
+"decision": string;
+"comment": string;
+"requested_at": string;
+"decided_at": string | null;
+};
+Insert: {
+"id"?: string;
+"organization_id": string;
+"process_id": string;
+"requested_by": string;
+"decided_by"?: string | null;
+"decision"?: string;
+"comment"?: string;
+"requested_at"?: string;
+"decided_at"?: string | null;
+};
+Update: {
+"id"?: string;
+"organization_id"?: string;
+"process_id"?: string;
+"requested_by"?: string;
+"decided_by"?: string | null;
+"decision"?: string;
+"comment"?: string;
+"requested_at"?: string;
+"decided_at"?: string | null;
+};
+Relationships: [{foreignKeyName:"process_approvals_decided_by_fkey";columns:["decided_by"];isOneToOne:false;referencedRelation:"profiles";referencedColumns:["id"]},{foreignKeyName:"process_approvals_organization_id_fkey";columns:["organization_id"];isOneToOne:false;referencedRelation:"organizations";referencedColumns:["id"]},{foreignKeyName:"process_approvals_organization_id_process_id_fkey";columns:["organization_id","process_id"];isOneToOne:false;referencedRelation:"department_processes";referencedColumns:["organization_id","id"]},{foreignKeyName:"process_approvals_requested_by_fkey";columns:["requested_by"];isOneToOne:false;referencedRelation:"profiles";referencedColumns:["id"]}];
+};
+"process_evidence": {
+Row: {
+"id": string;
+"organization_id": string;
+"process_id": string;
+"evidence_type": string;
+"entity_id": string;
+"added_by": string;
+"created_at": string;
+};
+Insert: {
+"id"?: string;
+"organization_id": string;
+"process_id": string;
+"evidence_type": string;
+"entity_id": string;
+"added_by"?: string;
+"created_at"?: string;
+};
+Update: {
+"id"?: string;
+"organization_id"?: string;
+"process_id"?: string;
+"evidence_type"?: string;
+"entity_id"?: string;
+"added_by"?: string;
+"created_at"?: string;
+};
+Relationships: [{foreignKeyName:"process_evidence_added_by_fkey";columns:["added_by"];isOneToOne:false;referencedRelation:"profiles";referencedColumns:["id"]},{foreignKeyName:"process_evidence_organization_id_fkey";columns:["organization_id"];isOneToOne:false;referencedRelation:"organizations";referencedColumns:["id"]},{foreignKeyName:"process_evidence_organization_id_process_id_fkey";columns:["organization_id","process_id"];isOneToOne:false;referencedRelation:"department_processes";referencedColumns:["organization_id","id"]}];
 };
 "profiles": {
 Row: {
@@ -895,25 +1342,236 @@ Update: {
 };
 Relationships: [{foreignKeyName:"user_preferences_id_fkey";columns:["id"];isOneToOne:false;referencedRelation:"profiles";referencedColumns:["id"]}];
 };
+"workflow_step_dependencies": {
+Row: {
+"organization_id": string;
+"workflow_version_id": string;
+"step_id": string;
+"depends_on_id": string;
+"created_at": string;
+};
+Insert: {
+"organization_id": string;
+"workflow_version_id": string;
+"step_id": string;
+"depends_on_id": string;
+"created_at"?: string;
+};
+Update: {
+"organization_id"?: string;
+"workflow_version_id"?: string;
+"step_id"?: string;
+"depends_on_id"?: string;
+"created_at"?: string;
+};
+Relationships: [{foreignKeyName:"workflow_step_dependencies_organization_id_depends_on_id_fkey";columns:["organization_id","depends_on_id"];isOneToOne:false;referencedRelation:"workflow_steps";referencedColumns:["organization_id","id"]},{foreignKeyName:"workflow_step_dependencies_organization_id_fkey";columns:["organization_id"];isOneToOne:false;referencedRelation:"organizations";referencedColumns:["id"]},{foreignKeyName:"workflow_step_dependencies_organization_id_step_id_fkey";columns:["organization_id","step_id"];isOneToOne:false;referencedRelation:"workflow_steps";referencedColumns:["organization_id","id"]},{foreignKeyName:"workflow_step_dependencies_organization_id_workflow_versio_fkey";columns:["organization_id","workflow_version_id"];isOneToOne:false;referencedRelation:"workflow_versions";referencedColumns:["organization_id","id"]}];
+};
+"workflow_step_runs": {
+Row: {
+"id": string;
+"organization_id": string;
+"process_id": string;
+"workflow_step_id": string;
+"status": string;
+"assigned_to": string | null;
+"task_id": string | null;
+"started_at": string | null;
+"completed_at": string | null;
+"error": string | null;
+"result": Json | null;
+"version": number;
+"created_at": string;
+"updated_at": string;
+};
+Insert: {
+"id"?: string;
+"organization_id": string;
+"process_id": string;
+"workflow_step_id": string;
+"status"?: string;
+"assigned_to"?: string | null;
+"task_id"?: string | null;
+"started_at"?: string | null;
+"completed_at"?: string | null;
+"error"?: string | null;
+"result"?: Json | null;
+"version"?: number;
+"created_at"?: string;
+"updated_at"?: string;
+};
+Update: {
+"id"?: string;
+"organization_id"?: string;
+"process_id"?: string;
+"workflow_step_id"?: string;
+"status"?: string;
+"assigned_to"?: string | null;
+"task_id"?: string | null;
+"started_at"?: string | null;
+"completed_at"?: string | null;
+"error"?: string | null;
+"result"?: Json | null;
+"version"?: number;
+"created_at"?: string;
+"updated_at"?: string;
+};
+Relationships: [{foreignKeyName:"workflow_step_runs_organization_id_assigned_to_fkey";columns:["organization_id","assigned_to"];isOneToOne:false;referencedRelation:"organization_members";referencedColumns:["organization_id","user_id"]},{foreignKeyName:"workflow_step_runs_organization_id_fkey";columns:["organization_id"];isOneToOne:false;referencedRelation:"organizations";referencedColumns:["id"]},{foreignKeyName:"workflow_step_runs_organization_id_process_id_fkey";columns:["organization_id","process_id"];isOneToOne:false;referencedRelation:"department_processes";referencedColumns:["organization_id","id"]},{foreignKeyName:"workflow_step_runs_organization_id_task_id_fkey";columns:["organization_id","task_id"];isOneToOne:false;referencedRelation:"tasks";referencedColumns:["organization_id","id"]},{foreignKeyName:"workflow_step_runs_organization_id_workflow_step_id_fkey";columns:["organization_id","workflow_step_id"];isOneToOne:false;referencedRelation:"workflow_steps";referencedColumns:["organization_id","id"]}];
+};
+"workflow_steps": {
+Row: {
+"id": string;
+"organization_id": string;
+"workflow_version_id": string;
+"code": string;
+"position": number;
+"name": string;
+"kind": string;
+"required": boolean;
+"expected_duration_minutes": number | null;
+"due_offset_days": number;
+"config": Json;
+"created_at": string;
+};
+Insert: {
+"id"?: string;
+"organization_id": string;
+"workflow_version_id": string;
+"code": string;
+"position": number;
+"name": string;
+"kind": string;
+"required"?: boolean;
+"expected_duration_minutes"?: number | null;
+"due_offset_days"?: number;
+"config"?: Json;
+"created_at"?: string;
+};
+Update: {
+"id"?: string;
+"organization_id"?: string;
+"workflow_version_id"?: string;
+"code"?: string;
+"position"?: number;
+"name"?: string;
+"kind"?: string;
+"required"?: boolean;
+"expected_duration_minutes"?: number | null;
+"due_offset_days"?: number;
+"config"?: Json;
+"created_at"?: string;
+};
+Relationships: [{foreignKeyName:"workflow_steps_organization_id_fkey";columns:["organization_id"];isOneToOne:false;referencedRelation:"organizations";referencedColumns:["id"]},{foreignKeyName:"workflow_steps_organization_id_workflow_version_id_fkey";columns:["organization_id","workflow_version_id"];isOneToOne:false;referencedRelation:"workflow_versions";referencedColumns:["organization_id","id"]}];
+};
+"workflow_versions": {
+Row: {
+"id": string;
+"organization_id": string;
+"workflow_id": string;
+"version": number;
+"status": string;
+"require_distinct_reviewer": boolean;
+"settings": Json;
+"published_at": string | null;
+"created_by": string;
+"created_at": string;
+};
+Insert: {
+"id"?: string;
+"organization_id": string;
+"workflow_id": string;
+"version": number;
+"status"?: string;
+"require_distinct_reviewer"?: boolean;
+"settings"?: Json;
+"published_at"?: string | null;
+"created_by"?: string;
+"created_at"?: string;
+};
+Update: {
+"id"?: string;
+"organization_id"?: string;
+"workflow_id"?: string;
+"version"?: number;
+"status"?: string;
+"require_distinct_reviewer"?: boolean;
+"settings"?: Json;
+"published_at"?: string | null;
+"created_by"?: string;
+"created_at"?: string;
+};
+Relationships: [{foreignKeyName:"workflow_versions_created_by_fkey";columns:["created_by"];isOneToOne:false;referencedRelation:"profiles";referencedColumns:["id"]},{foreignKeyName:"workflow_versions_organization_id_fkey";columns:["organization_id"];isOneToOne:false;referencedRelation:"organizations";referencedColumns:["id"]},{foreignKeyName:"workflow_versions_organization_id_workflow_id_fkey";columns:["organization_id","workflow_id"];isOneToOne:false;referencedRelation:"workflows";referencedColumns:["organization_id","id"]}];
+};
+"workflows": {
+Row: {
+"id": string;
+"organization_id": string;
+"department_id": string;
+"slug": string;
+"name": string;
+"status": string;
+"created_by": string;
+"created_at": string;
+"updated_at": string;
+};
+Insert: {
+"id"?: string;
+"organization_id": string;
+"department_id": string;
+"slug": string;
+"name": string;
+"status"?: string;
+"created_by"?: string;
+"created_at"?: string;
+"updated_at"?: string;
+};
+Update: {
+"id"?: string;
+"organization_id"?: string;
+"department_id"?: string;
+"slug"?: string;
+"name"?: string;
+"status"?: string;
+"created_by"?: string;
+"created_at"?: string;
+"updated_at"?: string;
+};
+Relationships: [{foreignKeyName:"workflows_created_by_fkey";columns:["created_by"];isOneToOne:false;referencedRelation:"profiles";referencedColumns:["id"]},{foreignKeyName:"workflows_organization_id_department_id_fkey";columns:["organization_id","department_id"];isOneToOne:false;referencedRelation:"departments";referencedColumns:["organization_id","id"]},{foreignKeyName:"workflows_organization_id_fkey";columns:["organization_id"];isOneToOne:false;referencedRelation:"organizations";referencedColumns:["id"]}];
+};
 }; Views: { [_ in never]: never }; Functions: {
 "approve_import": { Args: {"import_id":string;"expected_version":number;"approval_comment"?:string}; Returns: undefined };
+"archive_workflow_version": { Args: {"version_id":string}; Returns: undefined };
+"bulk_start_department_processes": { Args: {"org_id":string;"client_ids":string[];"target_competence":string;"process_owner"?:string;"due"?:string}; Returns: number };
 "can_access_storage": { Args: {"object_name":string;"operation":string}; Returns: boolean };
+"clone_workflow_version": { Args: {"source_version_id":string}; Returns: string };
+"complete_department_process": { Args: {"process_id":string;"expected_version":number}; Returns: undefined };
 "configure_import": { Args: {"import_id":string;"expected_version":number;"selected_sheet":number;"selected_header":number;"selected_mapping":Json}; Returns: number };
 "consume_rate_limit": { Args: {"org_id":string;"feature_name":string}; Returns: boolean };
 "create_document_request": { Args: {"org_id":string;"target_client":string;"title":string;"competence":string;"labels":string[];"due"?:string}; Returns: string };
+"create_dp_occurrence": { Args: {"process":string;"occurrence_type":string;"employee":string;"effective":string;"occurrence_source":string;"occurrence_notes":string;"idempotency":string;"document"?:string;"source_import"?:string}; Returns: string };
 "create_import": { Args: {"org_id":string;"target_client":string;"target_competence":string;"filename":string;"path":string;"file_checksum":string;"workbook":Json}; Returns: string };
 "create_organization": { Args: {"org_name":string;"person_name":string;"department_names":string[]}; Returns: string };
 "create_verified_import": { Args: {"payload":string;"signature":string}; Returns: string };
 "emit_due_notifications": { Args: {}; Returns: undefined };
+"enqueue_due_operis_jobs": { Args: {}; Returns: number };
+"ensure_dp_workflow": { Args: {"org_id":string}; Returns: string };
 "has_org_permission": { Args: {"org_id":string;"permission":string}; Returns: boolean };
 "is_org_member": { Args: {"org_id":string}; Returns: boolean };
 "manage_member": { Args: {"org_id":string;"email_address":string;"selected_role":string;"selected_department"?:string}; Returns: undefined };
 "process_import": { Args: {"import_id":string}; Returns: number };
 "process_pending_imports": { Args: {}; Returns: number };
+"publish_workflow_version": { Args: {"version_id":string}; Returns: undefined };
+"reopen_department_process": { Args: {"process_id":string;"reason":string}; Returns: undefined };
+"request_process_review": { Args: {"process_id":string;"expected_version":number}; Returns: undefined };
+"resolve_dp_validation": { Args: {"result_id":string;"resolution_text":string}; Returns: undefined };
+"review_department_process": { Args: {"process_id":string;"expected_version":number;"review_decision":string;"review_comment"?:string}; Returns: undefined };
 "save_import_template": { Args: {"import_id":string;"template_name":string}; Returns: string };
 "set_task_dependency": { Args: {"task_id":string;"dependency_id":string;"remove_dependency"?:boolean}; Returns: undefined };
 "share_organization": { Args: {"other_user":string}; Returns: boolean };
+"start_department_process": { Args: {"org_id":string;"target_client":string;"target_competence":string;"process_owner"?:string;"process_reviewer"?:string;"due"?:string}; Returns: string };
+"update_collection_item": { Args: {"item_id":string;"next_status":string;"next_response":string;"document"?:string;"item_notes"?:string}; Returns: undefined };
+"update_workflow_step_run": { Args: {"run_id":string;"expected_version":number;"next_status":string;"next_assignee"?:string;"step_note"?:string}; Returns: number };
 "valid_cpf": { Args: {"value":string}; Returns: boolean };
+"validate_department_process": { Args: {"process":string}; Returns: string };
 "validate_import": { Args: {"import_id":string;"expected_version":number}; Returns: Json };
 }; Enums: { [_ in never]: never }; CompositeTypes: { [_ in never]: never } } };
 export type Tables<T extends keyof Database["public"]["Tables"]> = Database["public"]["Tables"][T]["Row"];

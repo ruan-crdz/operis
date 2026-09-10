@@ -75,3 +75,51 @@ test('real Supabase: login, client, task, move, upload, import, approval and the
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('data-density', 'compact');
 });
+
+test('real Supabase: monthly DP workflow through four-eyes approval', async ({ page }) => {
+  test.skip(
+    !process.env.E2E_EMAIL ||
+      !process.env.E2E_PASSWORD ||
+      !process.env.E2E_REVIEWER_EMAIL ||
+      !process.env.E2E_REVIEWER_PASSWORD,
+    'Requires two confirmed members of the same test organization.',
+  );
+  const login = async (email: string, password: string) => {
+    await page.goto('./#/login');
+    await page.getByLabel('Email de trabalho').fill(email);
+    await page.getByLabel('Senha', { exact: true }).fill(password);
+    await page.getByRole('button', { name: 'Entrar no Operis' }).click();
+    await expect(page).toHaveURL(/\/app$/);
+  };
+  const suffix = Date.now().toString();
+  const competence = new Date().toISOString().slice(0, 7);
+  await login(process.env.E2E_EMAIL!, process.env.E2E_PASSWORD!);
+  await page.goto('./#/app/clientes/novo');
+  await page.getByLabel('Razão social').fill(`Cliente DP E2E ${suffix}`);
+  await page.getByRole('button', { name: 'Criar cliente' }).click();
+  const clientId = page.url().split('/').pop()!;
+  await page.goto(`./#/app/departamentos/dp?competence=${competence}`);
+  await page.getByLabel('Cliente', { exact: true }).selectOption(clientId);
+  await page.getByRole('button', { name: 'Abrir competência', exact: true }).click();
+  await expect(page.getByText('Etapas do workflow')).toBeVisible();
+  await page.getByLabel('Tipo').selectOption('admission');
+  await page.getByLabel('Observações', { exact: true }).last().fill('Admissão fictícia do teste E2E.');
+  await page.getByRole('button', { name: 'Registrar ocorrência' }).click();
+  await page.locator('details.collection-row').first().click();
+  await page.getByLabel('Resposta estruturada').first().selectOption('no_occurrence');
+  await page.getByLabel('Situação').first().selectOption('validated');
+  await page.getByRole('button', { name: 'Salvar item' }).first().click();
+  await page.getByRole('button', { name: 'Executar validação' }).click();
+  for (let i = 0; i < 13; i++) {
+    await page.getByRole('button', { name: 'Concluir', exact: true }).first().click();
+  }
+  await page.getByRole('button', { name: 'Solicitar revisão' }).click();
+  await page.getByLabel('Sair').click();
+  await login(process.env.E2E_REVIEWER_EMAIL!, process.env.E2E_REVIEWER_PASSWORD!);
+  await page.goto(`./#/app/departamentos/dp/competencia?client=${clientId}&competence=${competence}`);
+  await page.getByRole('button', { name: 'Aprovar', exact: true }).click();
+  await page.getByRole('button', { name: 'Concluir', exact: true }).first().click();
+  await page.getByRole('button', { name: 'Concluir', exact: true }).first().click();
+  await page.getByRole('button', { name: 'Concluir competência' }).click();
+  await expect(page.getByText('Concluído', { exact: true }).first()).toBeVisible();
+});

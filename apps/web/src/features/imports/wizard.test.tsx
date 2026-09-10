@@ -52,6 +52,7 @@ const data: WizardData = {
     correlation_id: '50000000-0000-4000-8000-000000000001',
     created_at: '2026-09-01T00:00:00Z',
     updated_at: '2026-09-01T00:00:00Z',
+    import_type: 'employee_master',
   },
   sheets: [sheet],
   savedMapping: mapping,

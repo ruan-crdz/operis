@@ -1,5 +1,11 @@
 # Banco de dados
 
+## Migration 009
+
+`202609100009_workflow_dp.sql` eleva o total para 40 tabelas públicas e adiciona definições/runs de workflow, processos por competência, colaboradores persistentes, ocorrências, checklist, variáveis operacionais, validações versionadas, aprovações e evidências. Também prepara solicitações externas com hash de token, registra tipos de importação e promove snapshots aprovados para a identidade persistente do colaborador.
+
+As mutações compostas são RPCs. Novas tabelas concedem somente `SELECT` ao papel `authenticated`; criação e transição passam pelas funções autorizadas. Índices atendem carteira por competência/status/responsável, etapas, ocorrências, coleta e validações abertas. O seed local contém 30 clientes distribuídos por estados operacionais.
+
 27 tabelas com RLS em seis migrations ordenadas:
 
 1. `202609100001_foundation.sql`: perfis, escritórios, membros, departamentos, RBAC, clientes, competências, tarefas, comentários, dependências, documentos, solicitações, notificações, auditoria, outbox e execuções de IA.

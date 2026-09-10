@@ -309,7 +309,8 @@ textarea {
     animation: none;
   }
 }
-.nav-progress {  position: fixed;
+.nav-progress {
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
@@ -1370,4 +1371,100 @@ td small {
 }
 .chip-add .input {
   flex: 1;
+}
+.progress-track {
+  width: 100%;
+  min-width: 90px;
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  margin: 6px 0;
+}
+.progress-track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--primary);
+}
+.process-summary {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+.process-summary > div {
+  display: grid;
+  gap: 5px;
+}
+.process-summary strong {
+  font-size: 18px;
+}
+.cockpit-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(300px, 0.8fr);
+  gap: 24px;
+  margin-top: 24px;
+}
+.workflow-row {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.workflow-row:last-child {
+  border-bottom: 0;
+}
+.workflow-index {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--surface-muted);
+  color: var(--muted-foreground);
+  font-size: 12px;
+}
+.workflow-main {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+.collection-row {
+  border-bottom: 1px solid var(--border);
+}
+.collection-row:last-child {
+  border-bottom: 0;
+}
+.collection-row summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 20px;
+}
+.collection-row summary::-webkit-details-marker {
+  display: none;
+}
+.timeline-item {
+  display: grid;
+  gap: 6px;
+  border-left: 2px solid var(--border-strong);
+  margin-top: 16px;
+  padding-left: 12px;
+}
+@media (max-width: 900px) {
+  .cockpit-grid,
+  .process-summary {
+    grid-template-columns: 1fr;
+  }
+  .workflow-row {
+    grid-template-columns: 30px minmax(0, 1fr);
+  }
+  .workflow-row > .actions {
+    grid-column: 2;
+  }
 }
