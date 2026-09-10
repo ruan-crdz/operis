@@ -1,6 +1,7 @@
 import { getUser } from '@/client/auth/context';
 import { AuthShell } from '@/features/auth/auth-shell';
 import { ActionForm } from '@/features/forms/action-form';
+import { DepartmentPicker } from '@/features/auth/department-picker';
 import { onboarding } from '@/client/actions/auth';
 export default async function Onboarding() {
   await getUser();
@@ -15,16 +16,10 @@ export default async function Onboarding() {
         fields={[
           { name: 'org_name', label: 'Nome do escritório', required: true },
           { name: 'person_name', label: 'Seu nome', required: true },
-          {
-            name: 'departments',
-            label: 'Departamentos',
-            type: 'textarea',
-            value:
-              'Departamento Pessoal, Fiscal, Contábil, Societário, BPO Financeiro, Compliance, Administração',
-            hint: 'Separe os nomes por vírgula.',
-          },
         ]}
-      />
+      >
+        <DepartmentPicker />
+      </ActionForm>
     </AuthShell>
   );
 }

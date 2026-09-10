@@ -1342,3 +1342,32 @@ td small {
 .assistant-composer .input {
   flex: 1;
 }
+.chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0;
+}
+.chip {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--foreground);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.chip-selected {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-weight: 500;
+}
+.chip-add {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+.chip-add .input {
+  flex: 1;
+}
