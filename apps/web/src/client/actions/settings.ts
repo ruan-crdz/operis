@@ -51,6 +51,21 @@ export async function toggleSidebar(form: FormData) {
     return { ok: true, message: 'Preferência salva.' };
   });
 }
+export async function setTheme(form: FormData) {
+  return action(async () => {
+    const { db, user } = await getContext();
+    const theme = z.enum(['light', 'dark', 'system']).parse(text(form, 'theme'));
+    const { error } = await db
+      .from('user_preferences')
+      .update({ theme })
+      .eq('id', user.id)
+      .select('id')
+      .single();
+    check(error);
+    (await localPreferences()).set('operis_theme', theme);
+    return { ok: true, message: 'Tema alterado.' };
+  });
+}
 export async function saveOrganization(form: FormData) {
   return action(async () => {
     const { db, orgId } = await requirePermission('organization.manage');

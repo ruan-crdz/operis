@@ -20,6 +20,10 @@ import {
   LogOut,
   Command,
   X,
+  Sparkles,
+  Sun,
+  Moon,
+  MonitorCog,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
@@ -27,13 +31,14 @@ import { Avatar, Button, Input } from '@operis/ui';
 import { Brand } from '@/features/auth/auth-shell';
 import { searchRecords } from '@/client/queries';
 import { logout } from '@/client/actions/auth';
-import { toggleSidebar } from '@/client/actions/settings';
+import { toggleSidebar, setTheme } from '@/client/actions/settings';
 const navigation = [
   { href: '/app', label: 'Visão geral', icon: LayoutDashboard, group: '' },
   { href: '/app/fila', label: 'Minha fila', icon: ListTodo, group: 'Operação', permission: 'tasks.read' },
   { href: '/app/tarefas', label: 'Tarefas', icon: Columns3, group: '', permission: 'tasks.read' },
   { href: '/app/clientes', label: 'Clientes', icon: Building2, group: '', permission: 'clients.read' },
   { href: '/app/departamentos', label: 'Departamentos', icon: Users, group: '', permission: 'members.read' },
+  { href: '/app/assistente', label: 'Assistente', icon: Sparkles, group: 'Inteligência' },
   {
     href: '/app/documentos',
     label: 'Documentos',
@@ -63,6 +68,7 @@ export function AppShell({
   avatar,
   permissions,
   collapsed: initialCollapsed,
+  theme: initialTheme,
   unread,
 }: {
   children: React.ReactNode;
@@ -71,11 +77,13 @@ export function AppShell({
   avatar: string | null;
   permissions: string[];
   collapsed: boolean;
+  theme: string;
   unread: number;
 }) {
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(initialCollapsed);
+  const [theme, setThemeState] = useState(initialTheme);
   const [commandOpen, setCommandOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<{
@@ -121,7 +129,23 @@ export function AppShell({
   return (
     <div className={`shell ${collapsed ? 'collapsed' : ''}`}>
       <aside className="sidebar">
-        <Brand />
+        <div className="sidebar-top">
+          <Brand />
+          <button
+            className="button button-ghost button-icon"
+            title={`Tema: ${theme === 'light' ? 'claro' : theme === 'dark' ? 'escuro' : 'sistema'}`}
+            aria-label="Alternar tema"
+            onClick={async () => {
+              const next = theme === 'light' ? 'dark' : theme === 'dark' ? 'system' : 'light';
+              setThemeState(next);
+              const form = new FormData();
+              form.set('theme', next);
+              await invokeAction(setTheme, form);
+            }}
+          >
+            {theme === 'light' ? <Sun size={16} /> : theme === 'dark' ? <Moon size={16} /> : <MonitorCog size={16} />}
+          </button>
+        </div>
         <div className="workspace">
           <Avatar name={organization} />
           <div>

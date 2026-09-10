@@ -20,6 +20,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
       avatar={avatar?.data?.signedUrl ?? null}
       permissions={[...ctx.permissions]}
       collapsed={ctx.preferences.sidebar_collapsed}
+      theme={ctx.preferences.theme}
       unread={count ?? 0}
     >
       {children}

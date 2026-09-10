@@ -294,6 +294,10 @@ test('rate limits are shared database counters and workers are restricted', asyn
   for (let i = 0; i < 6; i++)
     assert.equal(await scalar("select public.consume_rate_limit($1,'ai_mapping')", [orgA]), true);
   assert.equal(await scalar("select public.consume_rate_limit($1,'ai_mapping')", [orgA]), false);
+  for (let i = 0; i < 15; i++)
+    assert.equal(await scalar("select public.consume_rate_limit($1,'ai_assistant')", [orgA]), true);
+  assert.equal(await scalar("select public.consume_rate_limit($1,'ai_assistant')", [orgA]), false);
+  await assert.rejects(db.query("select public.consume_rate_limit($1,'not_a_feature')", [orgA]), /Permission denied/);
   await assert.rejects(db.query('select public.process_pending_imports()'), /permission denied/);
 });
 test('anonymous user cannot read operational data or create organization', async () => {

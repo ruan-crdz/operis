@@ -1,5 +1,6 @@
 export const routes = {
   '/app/auditoria': () => import('@/views/app/auditoria/page'),
+  '/app/assistente': () => import('@/views/app/assistente/page'),
   '/app/clientes/novo': () => import('@/views/app/clientes/novo/page'),
   '/app/clientes': () => import('@/views/app/clientes/page'),
   '/app/clientes/[id]': () => import('@/views/app/clientes/[id]/page'),

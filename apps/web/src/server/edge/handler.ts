@@ -4,7 +4,7 @@ import { competenceSchema } from '@operis/domain';
 import { z } from 'zod';
 import { readUpload } from '../files';
 import { parseSpreadsheet } from '../imports/parser';
-import { suggestSpreadsheetMapping } from '../ai/gateway';
+import { suggestSpreadsheetMapping, askAssistant, type ChatMessage } from '../ai/gateway';
 import { check, permit, type EdgeContext } from './context';
 import { createHmac } from 'node:crypto';
 const MAX_BODY = 12 * 1024 * 1024;
@@ -185,6 +185,14 @@ export function createHandler(env: (name: string) => string | undefined) {
           ),
           { headers },
         );
+      }
+      if (operation === 'assistant-chat') {
+        const message = z.string().trim().min(1).max(2000).parse(value(form, 'message'));
+        const history = z
+          .array(z.object({ role: z.enum(['user', 'assistant']), content: z.string().max(2000) }))
+          .max(20)
+          .parse(JSON.parse(value(form, 'history') || '[]')) as ChatMessage[];
+        return Response.json(await askAssistant(ctx, message, history), { headers });
       }
       return Response.json({ message: 'Operação desconhecida.' }, { status: 400, headers });
     } catch (error) {
