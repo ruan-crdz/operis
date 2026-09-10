@@ -1,7 +1,20 @@
 import { preferences as localPreferences } from '@/runtime/preferences';
 import { redirect } from '@/runtime/navigation';
 import { createClient, isConfigured } from '@/client/db/client';
-export const getUser = async () => {
+/** Dedupe getUser/getContext across the multiple loaders that run per navigation. */
+function memoize<T>(loader: () => Promise<T>): () => Promise<T> {
+  let cached: Promise<T> | null = null;
+  const invalidate = () => {
+    cached = null;
+  };
+  if (typeof window !== 'undefined') {
+    window.addEventListener('operis:navigation', invalidate);
+    window.addEventListener('operis:refresh', invalidate);
+    window.addEventListener('hashchange', invalidate);
+  }
+  return () => (cached ??= loader());
+}
+export const getUser = memoize(async () => {
   if (!isConfigured()) redirect('/configuracao');
   const db = await createClient();
   const {
@@ -10,8 +23,8 @@ export const getUser = async () => {
   } = await db.auth.getUser();
   if (error || !user) redirect('/login');
   return { db, user };
-};
-export const getContext = async () => {
+});
+export const getContext = memoize(async () => {
   const { db, user } = await getUser();
   const active = (await localPreferences()).get('operis_org')?.value;
   const { data: members, error } = await db
@@ -50,7 +63,7 @@ export const getContext = async () => {
     permissions: new Set(permissions.data?.map((p) => p.permission)),
     members,
   };
-};
+});
 export async function requirePermission(permission: string) {
   const ctx = await getContext();
   if (!ctx.permissions.has(permission)) redirect('/app/sem-permissao');

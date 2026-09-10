@@ -285,6 +285,30 @@ textarea {
   background: var(--primary-soft);
   color: var(--primary);
 }
+.skeleton {
+  border-radius: var(--radius);
+  background: linear-gradient(
+    100deg,
+    var(--surface-muted) 30%,
+    var(--surface-raised) 50%,
+    var(--surface-muted) 70%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-sweep 1.4s ease-in-out infinite;
+}
+@keyframes skeleton-sweep {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
 .toast-region {
   position: fixed;
   top: 16px;

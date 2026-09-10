@@ -5,6 +5,7 @@ import {
   useContext,
   useState,
   type ButtonHTMLAttributes,
+  type CSSProperties,
   type HTMLAttributes,
   type InputHTMLAttributes,
   type ReactNode,
@@ -93,6 +94,32 @@ export function Badge({
   tone?: 'neutral' | 'success' | 'warning' | 'danger' | 'ai';
 }) {
   return <span className={`badge badge-${tone}`}>{children}</span>;
+}
+export function Skeleton({
+  className,
+  style,
+}: {
+  className?: string;
+  style?: CSSProperties;
+}) {
+  return <div className={cn('skeleton', className)} style={style} />;
+}
+export function PageSkeleton() {
+  return (
+    <div className="panel-pad stack" aria-hidden="true" role="status" aria-label="Carregando…">
+      <div>
+        <Skeleton style={{ width: 140, height: 12 }} />
+        <Skeleton style={{ width: 260, height: 26, marginTop: 10 }} />
+      </div>
+      <div className="stats">
+        {[0, 1, 2, 3].map((i) => (
+          <Skeleton key={i} style={{ height: 88 }} />
+        ))}
+      </div>
+      <Skeleton style={{ height: 240 }} />
+      <Skeleton style={{ height: 160 }} />
+    </div>
+  );
 }
 export function PageHeader({
   eyebrow,
